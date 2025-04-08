@@ -8,7 +8,7 @@ const ProtectedRoute = ({children}:{children: ReactNode}) => {
 
   if (isLoading) return <p>Loading...</p>;
 
-  console.log("nn",user);
+  console.log("nnb",user);
 
   if (!user) return <Navigate to="/log-in" replace />;
 
