@@ -5,8 +5,24 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 
+// Auth admin
+export const useAuth = () => {
+  return useQuery({
+    queryKey: ["admin"], // Unique key for this query
+    queryFn: async () => {
+      const { data } = await axiosSecure.get("/api/admin/auth");
+      return data;
+    },
+    retry: false, // Disable retries for authentication checks
+    staleTime: 1000 * 60 * 5, // Cache the result for 5 minutes
+  });
+};
+
+
+
 export const useLoginAdmin = () => {
-  const { refetch: refetchAuth } = useAuth(); 
+  // const { refetch: refetchAuth } = useAuth();
+  const navigate = useNavigate(); 
 
   return useMutation<Response, Error, LoginRequest>({
     
@@ -15,13 +31,16 @@ export const useLoginAdmin = () => {
       const { data } = await axiosSecure.post("/api/admin/login", credentials);
       return data;
     },
-      onSuccess: () => {
-        // // Store the token in localStorage or cookies
-        // localStorage.setItem("token", data.token);
-
-        refetchAuth();
-
-      },
+    onSuccess: async(data) => {
+      // Handle success
+      toast.success(data.message || "Login successful!");
+      navigate('/');
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      // Handle error
+      toast.error(error.response?.data?.message || "An error occurred during login.");
+    },
   });
 };
 
@@ -81,15 +100,3 @@ export const useLogOut = () => {
   });
 };
 
-// Auth admin
-export const useAuth = () => {
-  return useQuery({
-    queryKey: ["admin"], // Unique key for this query
-    queryFn: async () => {
-      const { data } = await axiosSecure.get("/api/admin/auth");
-      return data;
-    },
-    retry: false, // Disable retries for authentication checks
-    staleTime: 1000 * 60 * 5, // Cache the result for 5 minutes
-  });
-};

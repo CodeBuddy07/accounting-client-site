@@ -8,7 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Mail, ArrowRight, Loader2 } from "lucide-react";
 import { useForgotPassword, useLoginAdmin } from "@/hooks/useAdmin";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+
 
 export default function Login() {
   const [error, setError] = useState<string | null>(null);
@@ -19,25 +19,10 @@ export default function Login() {
   const loginMutation = useLoginAdmin();
   const forgotPassMutation = useForgotPassword();
 
-  const navigate = useNavigate();
 
 
   const handleLogin = async () => {
-    loginMutation.mutate(
-      { email, password },
-      {
-        onSuccess: async(data) => {
-          // Handle success
-          await 
-          toast.success(data.message || "Login successful!");
-          navigate('/');
-        },
-        onError: (error: any) => {
-          // Handle error
-          toast.error(error.response?.data?.message || "An error occurred during login.");
-        },
-      }
-    );
+    loginMutation.mutate({ email, password });
   };
 
   const handleForgotPassword = () => {

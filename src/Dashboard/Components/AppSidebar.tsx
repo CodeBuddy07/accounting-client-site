@@ -1,16 +1,16 @@
 import {
-    AudioWaveform,
-    Command,
-    GalleryVerticalEnd,
-  } from "lucide-react"
+  AudioWaveform,
+  Command,
+  GalleryVerticalEnd,
+} from "lucide-react"
 
-  import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarHeader,
-    SidebarRail,
-  } from "@/components/ui/sidebar"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarRail,
+} from "@/components/ui/sidebar"
 import TeamSwitcher from "./TeamSwitcher";
 import NavMain from "./NavMain";
 import NavUser from "./NavUser";
@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAdmin";
 
-    
+
 
 const data = {
   user: {
@@ -71,7 +71,7 @@ const data = {
       title: "Products",
       url: "/products",
       icon: Package,
-      
+
     },
     {
       title: "Sales",
@@ -123,12 +123,12 @@ const data = {
 };
 
 
-  
-  const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
-    const {data: user} = useAuth();
-    data.user.email = user.admin.email
-    return (
-      <Sidebar collapsible="icon" {...props}>
+
+const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
+  const { data: user } = useAuth();
+  data.user.email = user.admin.email
+  return (
+    <Sidebar className="bg-white opacity-100 md:opacity-100" collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
@@ -140,7 +140,7 @@ const data = {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-    );
-  };
-  
-  export default AppSidebar;
+  );
+};
+
+export default AppSidebar;
