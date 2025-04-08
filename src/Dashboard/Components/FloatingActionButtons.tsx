@@ -25,8 +25,8 @@ const products: Product[] = [
 ];
 
 const customers: Customer[] = [
-    { id: 1, name: "Customer X", phone: "1234567890", debts: 0, credits: 0, note: "" },
-    { id: 2, name: "Customer Y", phone: "0987654321", debts: 0, credits: 0, note: "" },
+    { id: 1, name: "Customer X", phone: "1234567890", dues: 0, receivable: 0, note: "" },
+    { id: 2, name: "Customer Y", phone: "0987654321", dues: 0, receivable: 0, note: "" },
 ];
 
 // Reusable Product Selection Component
