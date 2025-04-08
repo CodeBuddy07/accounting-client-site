@@ -26,8 +26,9 @@ export default function Login() {
     loginMutation.mutate(
       { email, password },
       {
-        onSuccess: (data) => {
+        onSuccess: async(data) => {
           // Handle success
+          await 
           toast.success(data.message || "Login successful!");
           navigate('/');
         },

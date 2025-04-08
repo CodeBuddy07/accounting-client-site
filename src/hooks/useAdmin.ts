@@ -6,17 +6,22 @@ import { toast } from "sonner";
 
 
 export const useLoginAdmin = () => {
+  const { refetch: refetchAuth } = useAuth(); 
 
   return useMutation<Response, Error, LoginRequest>({
+    
+
     mutationFn: async (credentials: LoginRequest) => {
       const { data } = await axiosSecure.post("/api/admin/login", credentials);
       return data;
     },
-    //   onSuccess: (data) => {
-    //     // Store the token in localStorage or cookies
-    //     localStorage.setItem("token", data.token);
+      onSuccess: () => {
+        // // Store the token in localStorage or cookies
+        // localStorage.setItem("token", data.token);
 
-    //   },
+        refetchAuth();
+
+      },
   });
 };
 
