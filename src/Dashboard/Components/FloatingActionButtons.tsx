@@ -273,26 +273,39 @@ const FloatingActions = () => {
                             <DialogTitle>{dialogType === "buy" ? "Buy Product" : "Sell Product"}</DialogTitle>
                         </DialogHeader>
 
-                        {/* Product Selection */}
-                        <ProductSelection
-                            selectedProducts={formState.selectedProducts}
-                            onSelect={handleProductSelect}
-                            onRemove={removeProduct}
-                            onUpdate={updateProduct}
-                        />
-                        {errors.selectedProducts && <p className="text-red-500 text-sm">{errors.selectedProducts}</p>}
+                        <div className="flex flex-col md:flex-row gap-6 w-full">
+                            {/* Product Selection - left side, takes more space */}
+                            <div className="md:w-2/3 w-full">
+                                <ProductSelection
+                                    selectedProducts={formState.selectedProducts}
+                                    onSelect={handleProductSelect}
+                                    onRemove={removeProduct}
+                                    onUpdate={updateProduct}
+                                />
+                                {errors.selectedProducts && (
+                                    <p className="text-red-500 text-sm">{errors.selectedProducts}</p>
+                                )}
+                            </div>
 
-                        {/* Customer Selection */}
-                        <EntitySelection
-                            entities={customers}
-                            selectedEntity={formState.selectedCustomer}
-                            onSelect={(id) => setFormState(prev => ({ ...prev, selectedCustomer: id }))}
-                            placeholder="Select Customer"
-                        />
+                            {/* Right side - Customer + Date */}
+                            <div className="md:w-1/3 w-full flex flex-col gap-4">
+                                <EntitySelection
+                                    entities={customers}
+                                    selectedEntity={formState.selectedCustomer}
+                                    onSelect={(id) =>
+                                        setFormState((prev) => ({ ...prev, selectedCustomer: id }))
+                                    }
+                                    placeholder="Select Customer"
+                                />
 
-                        {/* Date Picker */}
-                        <DatePicker selectedDate={formState.date} onSelect={(date) => setFormState(prev => ({ ...prev, date }))} />
-                        {errors.date && <p className="text-red-500 text-sm">{errors.date}</p>}
+                                <DatePicker
+                                    selectedDate={formState.date}
+                                    onSelect={(date) => setFormState((prev) => ({ ...prev, date }))}
+                                />
+                                {errors.date && <p className="text-red-500 text-sm">{errors.date}</p>}
+                            </div>
+                        </div>
+
 
                         {/* Total Price */}
                         <p className="text-right text-lg font-bold">Total: {totalPrice} BDT</p>
@@ -311,31 +324,53 @@ const FloatingActions = () => {
                     <DialogContent>
                         <DialogHeader><DialogTitle>Add Expense</DialogTitle></DialogHeader>
 
-                        {/* Expense Name */}
-                        <Input
-                            placeholder="Expense Name"
-                            value={formState.expenseName}
-                            onChange={(e) => setFormState(prev => ({ ...prev, expenseName: e.target.value }))}
-                        />
-                        {errors.expenseName && <p className="text-red-500 text-sm">{errors.expenseName}</p>}
+                        <div className="flex flex-col md:flex-row gap-6 w-full">
+                            {/* Left side - Note (wider) */}
+                            <div className="md:w-2/3 w-full flex flex-col gap-4">
+                                <Input
+                                    placeholder="Expense Name"
+                                    value={formState.expenseName}
+                                    onChange={(e) =>
+                                        setFormState((prev) => ({ ...prev, expenseName: e.target.value }))
+                                    }
+                                />
+                                {errors.expenseName && (
+                                    <p className="text-red-500 text-sm">{errors.expenseName}</p>
+                                )}
+                                
+                                <Textarea
+                                    placeholder="Expense Note"
+                                    value={formState.expenseNote}
+                                    onChange={(e) =>
+                                        setFormState((prev) => ({ ...prev, expenseNote: e.target.value }))
+                                    }
+                                />
+                            </div>
 
-                        {/* Expense Amount */}
-                        <Input
-                            placeholder="Expense Amount"
-                            value={formState.expenseAmount}
-                            onChange={(e) => setFormState(prev => ({ ...prev, expenseAmount: e.target.value }))}
-                        />
-                        {errors.expenseAmount && <p className="text-red-500 text-sm">{errors.expenseAmount}</p>}
+                            {/* Right side - Name, Amount, Date */}
+                            <div className="md:w-1/3 w-full flex flex-col gap-4">
 
-                        {/* Expense Note */}
-                        <Textarea
-                            placeholder="Expense Note"
-                            value={formState.expenseNote}
-                            onChange={(e) => setFormState(prev => ({ ...prev, expenseNote: e.target.value }))}
-                        />
 
-                        {/* Date Picker */}
-                        <DatePicker selectedDate={formState.date} onSelect={(date) => setFormState(prev => ({ ...prev, date }))} />
+                                <Input
+                                    placeholder="Expense Amount"
+                                    value={formState.expenseAmount}
+                                    onChange={(e) =>
+                                        setFormState((prev) => ({ ...prev, expenseAmount: e.target.value }))
+                                    }
+                                />
+                                {errors.expenseAmount && (
+                                    <p className="text-red-500 text-sm">{errors.expenseAmount}</p>
+                                )}
+
+                                <DatePicker
+                                    selectedDate={formState.date}
+                                    onSelect={(date) =>
+                                        setFormState((prev) => ({ ...prev, date }))
+                                    }
+                                />
+                            </div>
+                        </div>
+
 
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setDialogType(null)}>Cancel</Button>

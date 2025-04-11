@@ -7,8 +7,8 @@ import { toast } from "sonner";
 
 // Create an Axios instance with a base URL and credentials
 const axiosSecure = axios.create({
-  //baseURL: 'http://localhost:3000',
-  baseURL: 'https://accounting-server-site.vercel.app', // Base URL from environment variables
+  baseURL: 'http://localhost:3000',
+  //baseURL: 'https://accounting-server-site.vercel.app', // Base URL from environment variables
   withCredentials: true, // Include credentials (cookies) in requests
 });
 

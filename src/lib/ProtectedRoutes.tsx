@@ -1,3 +1,4 @@
+import LoadingScreen from "@/Dashboard/Components/LoadingScreen";
 import { useAuth } from "@/hooks/useAdmin";
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
@@ -6,7 +7,7 @@ import { Navigate } from "react-router-dom";
 const ProtectedRoute = ({children}:{children: ReactNode}) => {
   const { data: user, isLoading } = useAuth();
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <LoadingScreen message="Hold On ! Authenticating You..." />;
 
   console.log("nnb",user);
 
