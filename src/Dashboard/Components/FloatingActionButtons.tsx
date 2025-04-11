@@ -16,14 +16,25 @@ interface SelectedProduct extends Product {
     price: number; // Price can be buyingPrice or sellingPrice based on the context
 }
 
+// Dummy data
+const products: Product[] = [
+    { _id: "1", name: "Product A", buyingPrice: 100, sellingPrice: 150, note: "" },
+    { _id: "2", name: "Product B", buyingPrice: 200, sellingPrice: 250, note: "" },
+    { _id: "3", name: "Product C", buyingPrice: 150, sellingPrice: 200, note: "" },
+    { _id: "4", name: "Product D", buyingPrice: 300, sellingPrice: 350, note: "" },
+];
 
+const customers: Customer[] = [
+    { _id: "1", name: "Customer X", phone: "1234567890", dues: 0, receivable: 0, note: "" },
+    { _id: "2", name: "Customer Y", phone: "0987654321", dues: 0, receivable: 0, note: "" },
+];
 
 // Reusable Product Selection Component
 const ProductSelection = ({ selectedProducts, onSelect, onRemove, onUpdate }: {
     selectedProducts: SelectedProduct[];
     onSelect: (product: Product) => void;
-    onRemove: (id: number) => void;
-    onUpdate: (id: number, key: keyof SelectedProduct, value: number) => void;
+    onRemove: (id: string) => void;
+    onUpdate: (id: string, key: keyof SelectedProduct, value: number) => void;
 }) => {
     return (
         <div className="space-y-4">
@@ -41,9 +52,9 @@ const ProductSelection = ({ selectedProducts, onSelect, onRemove, onUpdate }: {
                             <CommandEmpty>No product found.</CommandEmpty>
                             <CommandGroup>
                                 {products.map((product) => (
-                                    <CommandItem key={product.id} onSelect={() => onSelect(product)}>
+                                    <CommandItem key={product._id} onSelect={() => onSelect(product)}>
                                         {product.name} - ৳{product.sellingPrice}
-                                        <Check className={cn("ml-auto", selectedProducts.some((p) => p.id === product.id) ? "opacity-100" : "opacity-0")} />
+                                        <Check className={cn("ml-auto", selectedProducts.some((p) => p._id === product._id) ? "opacity-100" : "opacity-0")} />
                                     </CommandItem>
                                 ))}
                             </CommandGroup>
@@ -55,25 +66,25 @@ const ProductSelection = ({ selectedProducts, onSelect, onRemove, onUpdate }: {
             {/* Selected Products List */}
             <div className="space-y-2">
                 {selectedProducts.map((product) => (
-                    <div key={product.id} className="flex items-center justify-between p-2 border rounded">
+                    <div key={product._id} className="flex items-center justify-between p-2 border rounded">
                         <div className="flex-1">
                             <p className="font-medium">{product.name}</p>
                             <div className="flex gap-2">
                                 <Input
                                     type="number"
                                     value={product.quantity}
-                                    onChange={(e) => onUpdate(product.id, "quantity", parseInt(e.target.value))}
+                                    onChange={(e) => onUpdate(product._id, "quantity", parseInt(e.target.value))}
                                     className="w-20"
                                 />
                                 <Input
                                     type="number"
                                     value={product.price}
-                                    onChange={(e) => onUpdate(product.id, "price", parseFloat(e.target.value))}
+                                    onChange={(e) => onUpdate(product._id, "price", parseFloat(e.target.value))}
                                     className="w-20"
                                 />
                             </div>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() => onRemove(product.id)}>
+                        <Button variant="ghost" size="icon" onClick={() => onRemove(product._id)}>
                             <Trash2 className="h-4 w-4" />
                         </Button>
                     </div>
@@ -86,15 +97,15 @@ const ProductSelection = ({ selectedProducts, onSelect, onRemove, onUpdate }: {
 // Reusable Entity Selection Component (Customer/Supplier)
 const EntitySelection = ({ entities, selectedEntity, onSelect, placeholder }: {
     entities: Customer[];
-    selectedEntity: number | null;
-    onSelect: (id: number) => void;
+    selectedEntity: string | null;
+    onSelect: (id: string) => void;
     placeholder: string;
 }) => {
     return (
         <Popover>
             <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-between">
-                    {selectedEntity ? entities.find(e => e.id === selectedEntity)?.name : placeholder}
+                    {selectedEntity ? entities.find(e => e._id === selectedEntity)?.name : placeholder}
                     <ChevronsUpDown className="opacity-50" />
                 </Button>
             </PopoverTrigger>
@@ -103,7 +114,7 @@ const EntitySelection = ({ entities, selectedEntity, onSelect, placeholder }: {
                     <CommandInput placeholder="Search..." className="h-9" />
                     <CommandList>
                         {entities.map((entity) => (
-                            <CommandItem key={entity.id} onSelect={() => onSelect(entity.id)}>
+                            <CommandItem key={entity._id} onSelect={() => onSelect(entity._id)}>
                                 {entity.name}
                             </CommandItem>
                         ))}
@@ -179,19 +190,19 @@ const FloatingActions = () => {
         }
     };
 
-    const updateProduct = (id: number, key: keyof SelectedProduct, value: number) => {
+    const updateProduct = (id: string, key: keyof SelectedProduct, value: number) => {
         setFormState(prev => ({
             ...prev,
             selectedProducts: prev.selectedProducts.map((item) =>
-                item.id === id ? { ...item, [key]: value } : item
+                item._id === id ? { ...item, [key]: value } : item
             ),
         }));
     };
 
-    const removeProduct = (id: number) => {
+    const removeProduct = (id: string) => {
         setFormState(prev => ({
             ...prev,
-            selectedProducts: prev.selectedProducts.filter((item) => item.id !== id),
+            selectedProducts: prev.selectedProducts.filter((item) => item._id !== id),
         }));
     };
 
@@ -280,9 +291,9 @@ const FloatingActions = () => {
                             <div className="md:w-1/3 w-full flex flex-col gap-4">
                                 <EntitySelection
                                     entities={customers}
-                                    selectedEntity={formState.selectedCustomer}
+                                    selectedEntity={formState.selectedCustomer ? formState.selectedCustomer.toString() : null}
                                     onSelect={(id) =>
-                                        setFormState((prev) => ({ ...prev, selectedCustomer: id }))
+                                        setFormState((prev) => ({ ...prev, selectedCustomer: parseInt(id) }))
                                     }
                                     placeholder="Select Customer"
                                 />
