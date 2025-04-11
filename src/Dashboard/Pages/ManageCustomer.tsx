@@ -8,72 +8,118 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { PlusCircle, Edit, Trash2, Search, CreditCard, IndianRupee, Send, SendHorizonal } from "lucide-react";
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import { PlusCircle, Edit, Trash2, Search, CreditCard, IndianRupee, Send, SendHorizonal, Inbox } from "lucide-react";
 import { toast } from "sonner";
+import { useAddCustomer, useCustomers, useDeleteCustomer, useEditCustomer } from "@/hooks/useCustomer";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAddTransaction } from "@/hooks/useTransaction";
+import { SmartPagination } from "@/components/ui/SmartPagination";
+
 
 
 
 
 const ManageCustomers = () => {
     const [search, setSearch] = useState("");
-    const [customers, setCustomers] = useState<Customer[]>([
-        { id: 1, name: "John Doe", phone: "01700-000000", dues: 3000, note: "Regular customer" },
-        { id: 2, name: "Jane Smith", phone: "01800-111111", receivable: 200, note: "Frequent buyer" },
-    ]);
-
-    const [newCustomer, setNewCustomer] = useState<Customer>({
-        id: 0,
+    const [currentPage, setCurrentPage] = useState(1);
+    const { data: customerData, isLoading } = useCustomers({ page: currentPage, limit: 10, search });
+    const [newCustomer, setNewCustomer] = useState<CustomerPayload>({
         name: "",
         phone: "",
         note: "",
+        dues: 0,
+        receivable: 0,
     });
 
-    const [payment, setPayment] = useState<number | "">("");
+    const [payment, setPayment] = useState<Transaction>({
+        type: "",
+        amount: 0,
+    });
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isPayDialogOpen, setIsPayDialogOpen] = useState(false);
     const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
 
+    const [editingCustomer, setEditingCustomer] = useState<CustomerPayload>({
+        name: "",
+        phone: "",
+        note: "",
+    });
+
     // Add Customer
+    const { mutate: addCustomer } = useAddCustomer();
+    const { mutate: deleteCustomer } = useDeleteCustomer();
+    const { mutate: editCustomer } = useEditCustomer();
+    const { mutate: addTransaction } = useAddTransaction();
+
     const handleAddCustomer = () => {
         if (!newCustomer.name || !newCustomer.phone) {
             toast.error("Required Feilds", { description: "Name and phone number are required!" })
             return;
         }
 
-        setCustomers([...customers, { ...newCustomer, id: Date.now() }]);
-        setNewCustomer({ id: 0, name: "", phone: "", note: "" });
+        addCustomer(newCustomer);
+        setNewCustomer({ name: "", phone: "", note: "", dues: 0, receivable: 0 });
         setIsDialogOpen(false);
     };
 
+    const handleEditCustomer = (id: string) => {
+        if (!editingCustomer.name || !editingCustomer.phone) {
+            toast.error("Required Feilds", { description: "Name and phone number are required!" })
+            return;
+        }
+
+        editCustomer({ id, updates: editingCustomer });
+        setIsEditDialogOpen(false);
+    };
+
     // Delete Customer
-    const handleDeleteCustomer = (id: number) => {
+    const handleDeleteCustomer = (id: string) => {
         if (confirm("Are you sure you want to delete this customer?")) {
-            setCustomers(customers.filter((customer) => customer.id !== id));
+            deleteCustomer(id);
         }
     };
 
-    // Handle Payments (Debts & Credits)
+
     const handlePayment = () => {
-        if (!selectedCustomer || payment === "") return;
+        if (!selectedCustomer) {
+            toast.error("No customer selected.");
+            return;
+        }
 
-        setCustomers(
-            customers.map((customer) =>
-                customer.id === selectedCustomer.id
-                    ? {
-                        ...customer,
-                        debts: (customer.dues || 0) - Number(payment),
-                        credits: (customer.receivable || 0) - Number(payment),
-                    }
-                    : customer
-            )
+        const amount = Number(payment.amount);
+        if (!amount || amount <= 0) {
+            toast.error("Please enter a valid payment amount.");
+            return;
+        }
+
+
+        if (!payment.type) {
+            toast.info("This customer has no outstanding dues or receivables.");
+            return;
+        }
+
+        addTransaction(
+            {
+                type: payment.type,
+                customerId: selectedCustomer._id,
+                amount,
+                note: `Manual ${payment.type} of ৳${amount}`,
+            },
+            {
+                onSuccess: () => {
+                    setPayment({
+                        type: "",
+                        amount: 0,
+                    });
+                    setIsPayDialogOpen(false);
+                    setSelectedCustomer(null);
+                }
+            }
         );
-
-        setPayment("");
-        setIsPayDialogOpen(false);
     };
+
 
     return (
         <div className="p-6 space-y-6">
@@ -174,46 +220,60 @@ const ManageCustomers = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {customers
-                                .filter(
-                                    (customer) =>
-                                        customer.name.toLowerCase().includes(search.toLowerCase()) ||
-                                        customer.phone.includes(search)
-                                )
-                                .map((customer) => (
-                                    <TableRow key={customer.id}>
+                            {isLoading ? (
+                                Array.from({ length: 6 }).map((_, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                                        <TableCell><Skeleton className="h-6 w-[60px] rounded-md" /></TableCell>
+                                        <TableCell><Skeleton className="h-6 w-[60px] rounded-md" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                                        <TableCell className="flex gap-2 justify-end">
+                                            <Skeleton className="h-8 w-8 rounded-full" />
+                                            <Skeleton className="h-8 w-8 rounded-full" />
+                                            <Skeleton className="h-8 w-8 rounded-full" />
+                                            <Skeleton className="h-8 w-8 rounded-full" />
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : customerData?.data.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center py-8">
+                                        <div className="flex flex-col items-center justify-center text-gray-500">
+                                            <Inbox className="w-10 h-10 mb-2 text-gray-400" />
+                                            <p className="text-base font-medium">No customers found</p>
+                                            <p className="text-sm text-gray-400">Start by adding a new customer to see them listed here.</p>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                customerData?.data.map((customer: Customer) => (
+                                    <TableRow key={customer._id}>
                                         <TableCell>{customer.name}</TableCell>
                                         <TableCell>{customer.phone}</TableCell>
                                         <TableCell>
                                             <Badge
-                                                className={`px-3 flex justify-center items-center gap-2 py-1 rounded-md ${customer.dues ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-600"
-                                                    }`}
+                                                className={`px-3 flex justify-center items-center gap-2 py-1 rounded-md ${customer.dues ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-600"}`}
                                             >
                                                 <IndianRupee /> {customer.dues || "-"}
                                             </Badge>
                                         </TableCell>
-
                                         <TableCell>
                                             <Badge
-                                                className={`px-3 py-1 rounded-md ${customer.receivable
-                                                    ? "bg-green-100 text-green-600"
-                                                    : "bg-gray-100 text-gray-600"
-                                                    }`}
+                                                className={`px-3 py-1 rounded-md ${customer.receivable ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-600"}`}
                                             >
                                                 <IndianRupee /> {customer.receivable || "-"}
                                             </Badge>
                                         </TableCell>
-
                                         <TableCell className="max-w-[150px] truncate">
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <span className="cursor-pointer truncate block">{customer.note}</span>
+                                                    <span className="cursor-pointer truncate block">{customer.note || "—"}</span>
                                                 </TooltipTrigger>
                                                 <TooltipContent>{customer.note}</TooltipContent>
                                             </Tooltip>
                                         </TableCell>
-
-                                        <TableCell className=" flex gap-2 justify-end">
+                                        <TableCell className="flex gap-2 justify-end">
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
@@ -239,6 +299,11 @@ const ManageCustomers = () => {
                                                 variant="ghost"
                                                 onClick={() => {
                                                     setSelectedCustomer(customer);
+                                                    setEditingCustomer({
+                                                        name: customer.name,
+                                                        phone: customer.phone,
+                                                        note: customer.note,
+                                                    });
                                                     setIsEditDialogOpen(true);
                                                 }}
                                             >
@@ -247,43 +312,25 @@ const ManageCustomers = () => {
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                onClick={() => handleDeleteCustomer(customer.id)}
+                                                onClick={() => handleDeleteCustomer(customer._id)}
                                             >
                                                 <Trash2 className="w-5 h-5 text-red-600" />
                                             </Button>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                ))
+                            )}
+
                         </TableBody>
                     </Table>
                 </CardContent>
             </Card>
 
-            {/* Pagination */}
-            <Pagination>
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious href="#" />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationLink href="#">1</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationLink href="#" isActive>
-                            2
-                        </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationLink href="#">3</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationEllipsis />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationNext href="#" />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
+            <SmartPagination
+                currentPage={currentPage}
+                totalPages={customerData?.totalPages}
+                onPageChange={(page) => setCurrentPage(page)}
+            />
 
             {/* Pay Dialog */}
             <Dialog open={isPayDialogOpen} onOpenChange={setIsPayDialogOpen}>
@@ -292,22 +339,28 @@ const ManageCustomers = () => {
                         <DialogTitle>Make a Payment</DialogTitle>
                     </DialogHeader>
                     <div className="flex justify-center item-center gap-5">
-                        <Select>
+                        <Select
+                            value={payment.type}
+                            onValueChange={(value) => {
+                                setPayment({ ...payment, type: value });
+                            }}
+                        >
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder="Select a Payment" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    <SelectItem value="credit">Credit</SelectItem>
-                                    <SelectItem value="debt">Debt</SelectItem>
+                                    <SelectItem value="due">Payment</SelectItem>
+                                    <SelectItem value="receivable">Receive</SelectItem>
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
+
                         <Input
                             type="number"
                             placeholder="Enter amount"
-                            value={payment}
-                            onChange={(e) => setPayment(Number(e.target.value))}
+                            defaultValue={payment.amount}
+                            onChange={(e) => setPayment({ ...payment, amount: Number(e.target.value) })}
                         />
                     </div>
                     <Button onClick={handlePayment} className="w-full">
@@ -347,23 +400,29 @@ const ManageCustomers = () => {
                             <Input
                                 type="text"
                                 placeholder="Customer Name"
-                                value={selectedCustomer?.name}
-
+                                defaultValue={selectedCustomer?.name}
+                                onChange={(e) =>
+                                    setEditingCustomer({ ...editingCustomer, name: e.target.value })
+                                }
                             />
                             <Input
                                 type="text"
                                 placeholder="Phone Number"
-                                value={selectedCustomer?.phone}
-
+                                defaultValue={selectedCustomer?.phone}
+                                onChange={(e) =>
+                                    setEditingCustomer({ ...editingCustomer, phone: e.target.value })
+                                }
                             />
                         </div>
                         <Textarea
                             placeholder="Note (optional)"
-                            value={selectedCustomer?.note}
-
+                            defaultValue={selectedCustomer?.note}
+                            onChange={(e) =>
+                                setEditingCustomer({ ...editingCustomer, note: e.target.value })
+                            }
                         />
-                        
-                        <Button onClick={handleAddCustomer} className="w-full">
+
+                        <Button onClick={() => handleEditCustomer(selectedCustomer!._id)} className="w-full">
                             Update Customer
                         </Button>
                     </div>

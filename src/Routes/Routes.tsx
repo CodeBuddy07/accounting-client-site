@@ -5,6 +5,7 @@ import ManageCustomers from "@/Dashboard/Pages/ManageCustomer";
 import ProductManagement from "@/Dashboard/Pages/ProductManagement";
 import ResetPassword from "@/Dashboard/Pages/ResetPassword";
 import Settings from "@/Dashboard/Pages/Settings";
+import TransactionsPage from "@/Dashboard/Pages/Transaction";
 import ProtectedRoute from "@/lib/ProtectedRoutes";
 import {createBrowserRouter } from "react-router-dom";
 
@@ -29,7 +30,10 @@ const Routes = createBrowserRouter([
           path: "products",
           element: <ProductManagement/>
         },
-        
+        {
+          path: "transactions/:type",
+          element: <TransactionsPage/>
+        },
       ]
     },
     {

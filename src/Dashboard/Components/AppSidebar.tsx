@@ -1,4 +1,5 @@
 import {
+  ArrowRightLeftIcon,
   AudioWaveform,
   Command,
   GalleryVerticalEnd,
@@ -17,7 +18,6 @@ import NavUser from "./NavUser";
 
 
 import {
-  ShoppingCart,
   Package,
   Users,
   FileText,
@@ -74,12 +74,14 @@ const data = {
 
     },
     {
-      title: "Sales",
-      url: "/sales",
-      icon: ShoppingCart,
+      title: "Transactions",
+      url: "/transactions",
+      icon:  ArrowRightLeftIcon,
       items: [
-        { title: "All Sales", url: "/sales" },
-        { title: "New Sale", url: "/sales/add" },
+        { title: "All Transactions", url: "/transactions/all" },
+        { title: "All Purchase", url: "/transactions/purchases" },
+        { title: "All Sells", url: "/transactions/sells" },
+        { title: "All Expenses", url: "/transactions/expenses" },
       ],
     },
     {
@@ -128,7 +130,7 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
   const { data: user } = useAuth();
   data.user.email = user.admin.email
   return (
-    <Sidebar className="bg-white opacity-100 md:opacity-100" collapsible="icon" {...props}>
+    <Sidebar className="  opacity-100 md:opacity-100" collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>

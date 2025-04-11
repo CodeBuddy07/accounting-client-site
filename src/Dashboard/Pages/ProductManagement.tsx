@@ -1,59 +1,61 @@
 import { useState } from "react";
-import { Trash2, Plus, Search, Edit } from "lucide-react";
+import { Trash2, Plus, Search, Edit, Inbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext } from "@/components/ui/pagination";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAddProduct, useDeleteProduct, useEditProduct, useProducts } from "@/hooks/useProducts";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SmartPagination } from "@/components/ui/SmartPagination";
 
 
 
 const ProductManagement = () => {
   const [search, setSearch] = useState("");
-  const [products, setProducts] = useState<Product[]>([
-    { id: 1, name: "Laptop", buyingPrice: 500, sellingPrice: 700, note: "High-performance business laptop" },
-    { id: 2, name: "Smartphone", buyingPrice: 200, sellingPrice: 350, note: "Latest model with 5G support" },
-  ]);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 1;
+  const { data: productData, isLoading } = useProducts({ page: currentPage, limit: 10, search });
 
   // Add Product States
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [newProduct, setNewProduct] = useState({ name: "", buyingPrice: "", sellingPrice: "", note: "" });
+  const [newProduct, setNewProduct] = useState({ name: "", buyingPrice: 0, sellingPrice: 0, note: "" });
+  const [editingProduct, setEditingProduct] = useState({ name: "", buyingPrice: 0, sellingPrice: 0, note: "" });
   const [selectedProduct, setSelectedProduct] = useState<Product>();
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const { mutate: addProduct } = useAddProduct();
+  const { mutate: deleteProduct } = useDeleteProduct();
+  const { mutate: editProduct } = useEditProduct();
 
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
-  const handleDelete = (id: number) => {
-    setProducts(products.filter((product) => product.id !== id));
+  const handleDelete = (id: string) => {
+    if (confirm("Are you sure you want to delete this product?")) {
+      deleteProduct(id);
+    }
   };
 
   const handleAddProduct = () => {
-    if (!newProduct.name || !newProduct.buyingPrice || !newProduct.sellingPrice) return;
-    setProducts([
-      ...products,
-      {
-        id: products.length + 1,
-        name: newProduct.name,
-        buyingPrice: Number(newProduct.buyingPrice),
-        sellingPrice: Number(newProduct.sellingPrice),
-        note: "No notes available",
-      },
-    ]);
-    setNewProduct({ name: "", buyingPrice: "", sellingPrice: "", note: "" });
+    if (!newProduct.name || !newProduct.buyingPrice || !newProduct.sellingPrice) {
+      toast.error("Required Feilds", { description: "Name and prices are required!" })
+      return;
+    };
+    addProduct(newProduct);
+    setNewProduct({ name: "", buyingPrice: 0, sellingPrice: 0, note: "" });
     setIsDialogOpen(false);
+  };
+
+  const handleEditProduct = (id: string) => {
+    if (!editingProduct.name || !editingProduct.buyingPrice || !editingProduct.sellingPrice) {
+      console.log(id, editingProduct);
+      toast.error("Required Feilds", { description: "Name and prices are required!" })
+      return;
+    }
+
+    editProduct({ id, updates: editingProduct });
+    setIsEditDialogOpen(false);
   };
 
   return (
@@ -98,13 +100,13 @@ const ProductManagement = () => {
                   placeholder="Buying Price"
                   type="number"
                   value={newProduct.buyingPrice}
-                  onChange={(e) => setNewProduct({ ...newProduct, buyingPrice: e.target.value })}
+                  onChange={(e) => setNewProduct({ ...newProduct, buyingPrice: Number(e.target.value) })}
                 />
                 <Input
                   placeholder="Selling Price"
                   type="number"
                   value={newProduct.sellingPrice}
-                  onChange={(e) => setNewProduct({ ...newProduct, sellingPrice: e.target.value })}
+                  onChange={(e) => setNewProduct({ ...newProduct, sellingPrice: Number(e.target.value) })}
                 />
               </div>
               <Textarea
@@ -132,28 +134,31 @@ const ProductManagement = () => {
             <div className="space-y-3">
               <Input
                 placeholder="Product Name"
-                value={selectedProduct?.name}
-
+                defaultValue={selectedProduct?.name}
+                onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
               />
               <div className="flex gap-2">
                 <Input
                   placeholder="Buying Price"
                   type="number"
-                  value={selectedProduct?.buyingPrice}
-
+                  defaultValue={selectedProduct?.buyingPrice}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, buyingPrice: Number(e.target.value) })}
                 />
                 <Input
                   placeholder="Selling Price"
                   type="number"
-                  value={selectedProduct?.sellingPrice}
-
+                  defaultValue={selectedProduct?.sellingPrice}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, sellingPrice: Number(e.target.value) })}
                 />
               </div>
               <Textarea
                 placeholder="Note (optional)"
-                value={selectedProduct?.note}
+                defaultValue={selectedProduct?.note}
+                onChange={(e) =>
+                  setEditingProduct({ ...editingProduct, note: e.target.value })
+                }
               />
-              <Button className="w-full" onClick={handleAddProduct}>
+              <Button className="w-full" onClick={() => handleEditProduct(selectedProduct!._id)}>
                 Update
               </Button>
             </div>
@@ -176,39 +181,74 @@ const ProductManagement = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedProducts.length > 0 ? (
-                  paginatedProducts.map((product) => (
-                    <TableRow key={product.id}>
+                {isLoading ? (
+                  // Loading Skeletons
+                  Array.from({ length: 6 }).map((_, index) => (
+                    <TableRow key={index}>
+                      <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell> {/* Name */}
+                      <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>  {/* Buying Price */}
+                      <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>  {/* Selling Price */}
+                      <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell> {/* Note */}
+                      <TableCell className="flex gap-2 justify-end">
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                      </TableCell> {/* Actions */}
+                    </TableRow>
+                  ))
+                ) : productData.data.length === 0 ? (
+                  // No Products Message
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <div className="flex flex-col items-center justify-center text-gray-500">
+                        <Inbox className="w-10 h-10 mb-2 text-gray-400" />
+                        <p className="text-base font-medium">No Products found</p>
+                        <p className="text-sm text-gray-400">Start by adding a new product to see them listed here.</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  // Actual Product Rows
+                  productData.data.map((product: Product) => (
+                    <TableRow key={product._id}>
                       <TableCell>{product.name}</TableCell>
                       <TableCell>{product.buyingPrice}</TableCell>
                       <TableCell>{product.sellingPrice}</TableCell>
+
                       {/* Note Column with Tooltip */}
                       <TableCell className="max-w-[150px] truncate">
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="cursor-pointer truncate block">{product.note}</span>
+                            <span className="cursor-pointer truncate block">{product.note || "—"}</span>
                           </TooltipTrigger>
-                          <TooltipContent>{product.note}</TooltipContent>
+                          <TooltipContent>{product.note || "No note provided"}</TooltipContent>
                         </Tooltip>
                       </TableCell>
+
                       {/* Actions */}
                       <TableCell className="flex gap-2 justify-end">
-                        <Button variant="ghost" size="icon" onClick={() => { setSelectedProduct(product); setIsEditDialogOpen(true) }}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedProduct(product);
+                            setIsEditDialogOpen(true);
+                            setEditingProduct({ name: product.name, buyingPrice: product.buyingPrice, sellingPrice: product.sellingPrice, note: product.note });
+                          }}
+                        >
                           <Edit className="text-blue-600" size={16} />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(product.id)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(product._id)}
+                        >
                           <Trash2 size={16} className="text-red-500" />
                         </Button>
                       </TableCell>
                     </TableRow>
                   ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-4">
-                      No products found.
-                    </TableCell>
-                  </TableRow>
                 )}
+
               </TableBody>
             </Table>
 
@@ -217,35 +257,11 @@ const ProductManagement = () => {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              />
-            </PaginationItem>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <PaginationItem key={i}>
-                <PaginationLink
-                  href="#"
-                  isActive={currentPage === i + 1}
-                  onClick={() => setCurrentPage(i + 1)}
-                >
-                  {i + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
+      <SmartPagination
+        currentPage={currentPage}
+        totalPages={productData?.totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
     </div>
   );
 };

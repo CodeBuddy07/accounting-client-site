@@ -16,18 +16,7 @@ interface SelectedProduct extends Product {
     price: number; // Price can be buyingPrice or sellingPrice based on the context
 }
 
-// Dummy data
-const products: Product[] = [
-    { id: 1, name: "Product A", buyingPrice: 100, sellingPrice: 150, note: "" },
-    { id: 2, name: "Product B", buyingPrice: 200, sellingPrice: 250, note: "" },
-    { id: 3, name: "Product C", buyingPrice: 150, sellingPrice: 200, note: "" },
-    { id: 4, name: "Product D", buyingPrice: 300, sellingPrice: 350, note: "" },
-];
 
-const customers: Customer[] = [
-    { id: 1, name: "Customer X", phone: "1234567890", dues: 0, receivable: 0, note: "" },
-    { id: 2, name: "Customer Y", phone: "0987654321", dues: 0, receivable: 0, note: "" },
-];
 
 // Reusable Product Selection Component
 const ProductSelection = ({ selectedProducts, onSelect, onRemove, onUpdate }: {
@@ -126,14 +115,14 @@ const EntitySelection = ({ entities, selectedEntity, onSelect, placeholder }: {
 };
 
 // Reusable Date Picker Component
-const DatePicker = ({ selectedDate, onSelect }: {
+export const DatePicker = ({ selectedDate, onSelect }: {
     selectedDate: Date | null;
     onSelect: (date: Date | null) => void;
 }) => {
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-max justify-start">
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {selectedDate ? selectedDate.toDateString() : "Pick a date"}
                 </Button>
@@ -175,7 +164,7 @@ const FloatingActions = () => {
     };
 
     const handleProductSelect = (product: Product) => {
-        if (!formState.selectedProducts.some((p) => p.id === product.id)) {
+        if (!formState.selectedProducts.some((p) => p._id === product._id)) {
             setFormState(prev => ({
                 ...prev,
                 selectedProducts: [

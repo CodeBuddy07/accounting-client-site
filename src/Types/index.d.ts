@@ -1,15 +1,15 @@
 // Customer Type
 interface Customer {
-    id: number;
-    name: string;
-    phone: string;
-    dues?: number;
-    receivable?: number;
-    note?: string;
+  _id: string;
+  name: string;
+  phone: string;
+  dues?: number;
+  receivable?: number;
+  note?: string;
 }
 
 interface Product {
-  id: number;
+  _id: string;
   name: string;
   buyingPrice: number;
   sellingPrice: number;
@@ -34,4 +34,34 @@ interface Response {
   message: string;
 }
 
+
+interface UpdateCustomerPayload {
+  id: string;
+  data: Partial<Customer>;
+}
+
+interface CustomerPayload {
+  name: string;
+  phone: string;
+  note?: string;
+  dues?: number;
+  receivable?: number;
+}
+
+interface CustomerQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+interface Transaction {
+  _id?: string;
+  type: string;
+  customer?: Customer;
+  customerId?: mongoose.Types.ObjectId;
+  productId?: mongoose.Types.ObjectId;
+  amount: number;
+  date?: Date;
+  note?: string;
+}
 
