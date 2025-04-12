@@ -43,8 +43,6 @@ import { useAuth, useLogOut } from "@/hooks/useAdmin";
     const logoutMutation = useLogOut();
     const {data} = useAuth();
 
-    console.log(data);
-    
     return (
         <SidebarMenu>
       <SidebarMenuItem>

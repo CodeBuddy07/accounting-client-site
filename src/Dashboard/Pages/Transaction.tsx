@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { Search, Inbox } from "lucide-react";
+import { Search, Inbox, CalendarIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTransactions } from "@/hooks/useTransaction";
-import { DatePicker } from "../Components/FloatingActionButtons";
 import { useParams } from "react-router-dom";
 import { SmartPagination } from "@/components/ui/SmartPagination";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 
 const TransactionPage = () => {
     const [search, setSearch] = useState("");
@@ -24,9 +26,7 @@ const TransactionPage = () => {
         type: type === "all" ? undefined : type,
     });
 
-
-    console.log(transactionData);
-
+    console.log(transactionData, "Transaction Data");
     return (
         <div className="p-6 space-y-4">
             <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
@@ -46,11 +46,18 @@ const TransactionPage = () => {
                     />
                 </div>
 
-                <DatePicker
-                    selectedDate={new Date(date)}
-                    onSelect={(d) => setDate(d!)}
-
-                />
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-max justify-start">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {date ? date.toDateString() : "Pick a date"}
+                           
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                        <Calendar mode="single" selected={date || undefined} onSelect={(date) => setDate(date!)} />
+                    </PopoverContent>
+                </Popover>
 
 
             </div>

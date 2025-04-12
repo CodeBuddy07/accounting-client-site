@@ -11,6 +11,8 @@ import { useAddProduct, useDeleteProduct, useEditProduct, useProducts } from "@/
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SmartPagination } from "@/components/ui/SmartPagination";
+import { Label } from "@/components/ui/label";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 
 
@@ -32,9 +34,10 @@ const ProductManagement = () => {
 
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this product?")) {
+    
       deleteProduct(id);
-    }
+      setSelectedProduct(undefined);
+    
   };
 
   const handleAddProduct = () => {
@@ -49,7 +52,6 @@ const ProductManagement = () => {
 
   const handleEditProduct = (id: string) => {
     if (!editingProduct.name || !editingProduct.buyingPrice || !editingProduct.sellingPrice) {
-      console.log(id, editingProduct);
       toast.error("Required Feilds", { description: "Name and prices are required!" })
       return;
     }
@@ -95,19 +97,32 @@ const ProductManagement = () => {
                 value={newProduct.name}
                 onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
               />
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Buying Price"
-                  type="number"
-                  value={newProduct.buyingPrice}
-                  onChange={(e) => setNewProduct({ ...newProduct, buyingPrice: Number(e.target.value) })}
-                />
-                <Input
-                  placeholder="Selling Price"
-                  type="number"
-                  value={newProduct.sellingPrice}
-                  onChange={(e) => setNewProduct({ ...newProduct, sellingPrice: Number(e.target.value) })}
-                />
+              <div className="flex gap-4">
+                <div className="space-y-2 w-full">
+                  <Label className="!px-1" htmlFor="buyingPrice">Buying Price</Label>
+                  <Input
+                    id="buyingPrice"
+                    type="number"
+                    placeholder="Enter Buying Price"
+                    value={newProduct.buyingPrice || ""}
+                    onChange={(e) =>
+                      setNewProduct({ ...newProduct, buyingPrice: Number(e.target.value) })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2 w-full">
+                  <Label className="!px-1" htmlFor="sellingPrice">Selling Price</Label>
+                  <Input
+                    id="sellingPrice"
+                    type="number"
+                    placeholder="Enter Selling Price"
+                    value={newProduct.sellingPrice || ""}
+                    onChange={(e) =>
+                      setNewProduct({ ...newProduct, sellingPrice: Number(e.target.value) })
+                    }
+                  />
+                </div>
               </div>
               <Textarea
                 placeholder="Note (optional)"
@@ -137,20 +152,40 @@ const ProductManagement = () => {
                 defaultValue={selectedProduct?.name}
                 onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
               />
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Buying Price"
-                  type="number"
-                  defaultValue={selectedProduct?.buyingPrice}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, buyingPrice: Number(e.target.value) })}
-                />
-                <Input
-                  placeholder="Selling Price"
-                  type="number"
-                  defaultValue={selectedProduct?.sellingPrice}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, sellingPrice: Number(e.target.value) })}
-                />
+              <div className="flex gap-4">
+                <div className="space-y-2 w-full">
+                  <Label className="!px-1" htmlFor="buyingPrice">Buying Price</Label>
+                  <Input
+                    id="buyingPrice"
+                    type="number"
+                    placeholder="Enter Buying Price"
+                    value={editingProduct.buyingPrice || ""}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        buyingPrice: Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2 w-full">
+                  <Label className="!px-1" htmlFor="sellingPrice">Selling Price</Label>
+                  <Input
+                    id="sellingPrice"
+                    type="number"
+                    placeholder="Enter Selling Price"
+                    value={editingProduct.sellingPrice || ""}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        sellingPrice: Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
               </div>
+
               <Textarea
                 placeholder="Note (optional)"
                 defaultValue={selectedProduct?.note}
@@ -237,13 +272,37 @@ const ProductManagement = () => {
                         >
                           <Edit className="text-blue-600" size={16} />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(product._id)}
-                        >
-                          <Trash2 size={16} className="text-red-500" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => setSelectedProduct(product)}
+                            >
+                              <Trash2 className="w-5 h-5 text-red-600" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure you want to delete this Product?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action is permanent and cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel onClick={() => setSelectedProduct(undefined)}>
+                                Cancel
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => {
+                                  if (selectedProduct!._id) handleDelete(selectedProduct!._id);
+                                }}
+                              >
+                                Yes, delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))

@@ -8,12 +8,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { PlusCircle, Edit, Trash2, Search, CreditCard, IndianRupee, Send, SendHorizonal, Inbox } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Search, CreditCard, IndianRupee, Send, SendHorizonal, Inbox, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAddCustomer, useCustomers, useDeleteCustomer, useEditCustomer } from "@/hooks/useCustomer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAddTransaction } from "@/hooks/useTransaction";
 import { SmartPagination } from "@/components/ui/SmartPagination";
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 
 
 
@@ -48,10 +49,10 @@ const ManageCustomers = () => {
     });
 
     // Add Customer
-    const { mutate: addCustomer } = useAddCustomer();
+    const { mutate: addCustomer, isPending } = useAddCustomer();
     const { mutate: deleteCustomer } = useDeleteCustomer();
-    const { mutate: editCustomer } = useEditCustomer();
-    const { mutate: addTransaction } = useAddTransaction();
+    const { mutate: editCustomer, isPending: editLoading } = useEditCustomer();
+    const { mutate: addTransaction, isPending: transactionPending } = useAddTransaction();
 
     const handleAddCustomer = () => {
         if (!newCustomer.name || !newCustomer.phone) {
@@ -76,9 +77,8 @@ const ManageCustomers = () => {
 
     // Delete Customer
     const handleDeleteCustomer = (id: string) => {
-        if (confirm("Are you sure you want to delete this customer?")) {
-            deleteCustomer(id);
-        }
+        deleteCustomer(id);
+        setSelectedCustomer(null);
     };
 
 
@@ -180,25 +180,38 @@ const ManageCustomers = () => {
                                 }
                             />
                             <div className="flex gap-4">
-                                <Input
-                                    type="number"
-                                    placeholder="Previous Due"
-                                    value={newCustomer.dues}
-                                    onChange={(e) =>
-                                        setNewCustomer({ ...newCustomer, dues: Number(e.target.value) })
-                                    }
-                                />
-                                <Input
-                                    type="number"
-                                    placeholder="Previous Receivable"
-                                    value={newCustomer.receivable}
-                                    onChange={(e) =>
-                                        setNewCustomer({ ...newCustomer, receivable: Number(e.target.value) })
-                                    }
-                                />
+                                <div className="flex w-full flex-col">
+                                    <label className="text-sm mb-1">Previous Due</label>
+                                    <Input
+                                        type="number"
+                                        value={newCustomer.dues || ''}
+                                        onChange={(e) =>
+                                            setNewCustomer({ ...newCustomer, dues: Number(e.target.value) || 0 })
+                                        }
+                                    />
+                                </div>
+
+                                <div className="flex w-full flex-col">
+                                    <label className="text-sm mb-1">Previous Receivable</label>
+                                    <Input
+                                        type="number"
+                                        value={newCustomer.receivable || ''}
+                                        onChange={(e) =>
+                                            setNewCustomer({ ...newCustomer, receivable: Number(e.target.value) || 0 })
+                                        }
+                                    />
+                                </div>
                             </div>
-                            <Button onClick={handleAddCustomer} className="w-full">
-                                Add Customer
+
+                            <Button disabled={isPending} onClick={handleAddCustomer} className="w-full">
+                                {isPending ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Adding...
+                                    </>
+                                ) : (
+                                    "Add Customer"
+                                )}
                             </Button>
                         </div>
                     </DialogContent>
@@ -309,13 +322,38 @@ const ManageCustomers = () => {
                                             >
                                                 <Edit className="w-5 h-5 text-blue-600" />
                                             </Button>
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                onClick={() => handleDeleteCustomer(customer._id)}
-                                            >
-                                                <Trash2 className="w-5 h-5 text-red-600" />
-                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        onClick={() => setSelectedCustomer(customer)}
+                                                    >
+                                                        <Trash2 className="w-5 h-5 text-red-600" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure you want to delete this customer?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            This action is permanent and cannot be undone.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel onClick={() => setSelectedCustomer(null)}>
+                                                            Cancel
+                                                        </AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={() => {
+                                                                if (selectedCustomer!._id) handleDeleteCustomer(selectedCustomer!._id);
+                                                            }}
+                                                        >
+                                                            Yes, delete
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -363,8 +401,19 @@ const ManageCustomers = () => {
                             onChange={(e) => setPayment({ ...payment, amount: Number(e.target.value) })}
                         />
                     </div>
-                    <Button onClick={handlePayment} className="w-full">
-                        Pay
+                    <Button
+                        disabled={transactionPending}
+                        onClick={handlePayment}
+                        className="w-full flex items-center justify-center gap-2"
+                    >
+                        {transactionPending ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Processing...
+                            </>
+                        ) : (
+                            "Pay"
+                        )}
                     </Button>
                 </DialogContent>
             </Dialog>
@@ -423,7 +472,15 @@ const ManageCustomers = () => {
                         />
 
                         <Button onClick={() => handleEditCustomer(selectedCustomer!._id)} className="w-full">
-                            Update Customer
+
+                            {editLoading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Updating...
+                                </>
+                            ) : (
+                                "Update Customer"
+                            )}
                         </Button>
                     </div>
                 </DialogContent>
