@@ -28,18 +28,46 @@ export const useTransactions = ({
     limit = 10,
     search = "",
     type = "all",
-    date = new Date(),
+    dateFrom,
+    dateTo,
+}: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    type?: string;
+    dateFrom?: Date;
+    dateTo?: Date;
 }) => {
     return useQuery({
-        queryKey: ["transactions", page, limit, search, type, date],
+        queryKey: ["transactions", page, limit, search, type, dateFrom, dateTo],
         queryFn: async () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const params: Record<string, any> = {
+                page,
+                limit,
+                search,
+            };
+
+            // Only add type if it's not "all"
+            if (type && type !== "all") {
+                params.type = type;
+            }
+
+            // Add date params if they exist
+            if (dateFrom) {
+                params.dateFrom = dateFrom.toISOString();
+            }
+            if (dateTo) {
+                params.dateTo = dateTo.toISOString();
+            }
+
             const { data } = await axiosSecure.get("/api/transactions", {
-                params: { page, limit, search, type, date },
+                params,
             });
             return data;
         },
         placeholderData: (prev) => prev,
-        staleTime: 1000 * 60 * 2,
+        staleTime: 1000 * 60 * 2, // 2 minutes stale time
     });
 };
 

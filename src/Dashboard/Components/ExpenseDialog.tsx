@@ -1,0 +1,138 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+export function ExpenseDialog({ children }: { children: React.ReactNode }) {
+  const [name, setName] = useState("");
+  const [note, setNote] = useState("");
+  const [amount, setAmount] = useState("");
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [open, setOpen] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle form submission here
+    console.log({ name, note, amount, date });
+    setOpen(false);
+    // Reset form
+    setName("");
+    setNote("");
+    setAmount("");
+    setDate(new Date());
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold text-center">Add New Expense</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name Field */}
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-sm font-medium">
+              Expense Name *
+            </Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Office Supplies"
+              className="h-12 text-base"
+              required
+            />
+          </div>
+
+          {/* Amount Field */}
+          <div className="space-y-2">
+            <Label htmlFor="amount" className="text-sm font-medium">
+              Amount *
+            </Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
+                id="amount"
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                className="h-12 text-base pl-8"
+                required
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
+
+          {/* Date Picker */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Date *</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full h-12 justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Note Field */}
+          <div className="space-y-2">
+            <Label htmlFor="note" className="text-sm font-medium">
+              Note
+            </Label>
+            <Textarea
+              id="note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Additional details about this expense..."
+              className="min-h-[100px]"
+            />
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setOpen(false)}
+              className="h-12 px-6"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" className="h-12 px-6">
+              Add Expense
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

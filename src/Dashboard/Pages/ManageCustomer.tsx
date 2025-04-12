@@ -28,8 +28,7 @@ const ManageCustomers = () => {
         name: "",
         phone: "",
         note: "",
-        dues: 0,
-        receivable: 0,
+        balance: 0,
     });
 
     const [payment, setPayment] = useState<Transaction>({
@@ -61,7 +60,7 @@ const ManageCustomers = () => {
         }
 
         addCustomer(newCustomer);
-        setNewCustomer({ name: "", phone: "", note: "", dues: 0, receivable: 0 });
+        setNewCustomer({ name: "", phone: "", note: "", balance: 0 });
         setIsDialogOpen(false);
     };
 
@@ -104,8 +103,10 @@ const ManageCustomers = () => {
             {
                 type: payment.type,
                 customerId: selectedCustomer._id,
+                customerName: selectedCustomer.name,
                 amount,
-                note: `Manual ${payment.type} of ৳${amount}`,
+                note: `Manual entry: ৳${amount} ${payment.type == "due" ? "Paid to" : "Received from" } ${selectedCustomer.name}`,
+                paymentType: "due"
             },
             {
                 onSuccess: () => {
@@ -179,29 +180,20 @@ const ManageCustomers = () => {
                                     setNewCustomer({ ...newCustomer, note: e.target.value })
                                 }
                             />
-                            <div className="flex gap-4">
-                                <div className="flex w-full flex-col">
-                                    <label className="text-sm mb-1">Previous Due</label>
-                                    <Input
-                                        type="number"
-                                        value={newCustomer.dues || ''}
-                                        onChange={(e) =>
-                                            setNewCustomer({ ...newCustomer, dues: Number(e.target.value) || 0 })
-                                        }
-                                    />
-                                </div>
-
-                                <div className="flex w-full flex-col">
-                                    <label className="text-sm mb-1">Previous Receivable</label>
-                                    <Input
-                                        type="number"
-                                        value={newCustomer.receivable || ''}
-                                        onChange={(e) =>
-                                            setNewCustomer({ ...newCustomer, receivable: Number(e.target.value) || 0 })
-                                        }
-                                    />
-                                </div>
+                            <div className="flex w-full flex-col">
+                                <label className="text-sm mb-1">Opening Balance</label>
+                                <Input
+                                    type="number"
+                                    value={newCustomer.balance || ''}
+                                    onChange={(e) =>
+                                        setNewCustomer({ ...newCustomer, balance: Number(e.target.value) || 0 })
+                                    }
+                                />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Negative if customer owes you, positive if you owe the customer.
+                                </p>
                             </div>
+
 
                             <Button disabled={isPending} onClick={handleAddCustomer} className="w-full">
                                 {isPending ? (
@@ -226,8 +218,8 @@ const ManageCustomers = () => {
                             <TableRow>
                                 <TableHead>Name</TableHead>
                                 <TableHead>Phone</TableHead>
-                                <TableHead>Dues</TableHead>
-                                <TableHead>Receivable</TableHead>
+                                <TableHead>Dues/Receivable</TableHead>
+
                                 <TableHead>Note</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -238,7 +230,6 @@ const ManageCustomers = () => {
                                     <TableRow key={index}>
                                         <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                                        <TableCell><Skeleton className="h-6 w-[60px] rounded-md" /></TableCell>
                                         <TableCell><Skeleton className="h-6 w-[60px] rounded-md" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
                                         <TableCell className="flex gap-2 justify-end">
@@ -251,7 +242,7 @@ const ManageCustomers = () => {
                                 ))
                             ) : customerData?.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-8">
+                                    <TableCell colSpan={5} className="text-center py-8">
                                         <div className="flex flex-col items-center justify-center text-gray-500">
                                             <Inbox className="w-10 h-10 mb-2 text-gray-400" />
                                             <p className="text-base font-medium">No customers found</p>
@@ -265,19 +256,34 @@ const ManageCustomers = () => {
                                         <TableCell>{customer.name}</TableCell>
                                         <TableCell>{customer.phone}</TableCell>
                                         <TableCell>
-                                            <Badge
-                                                className={`px-3 flex justify-center items-center gap-2 py-1 rounded-md ${customer.dues ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-600"}`}
+                                            <div
+                                                className="group relative"
                                             >
-                                                <IndianRupee /> {customer.dues || "-"}
-                                            </Badge>
+                                                <Badge
+                                                    className={`px-3 flex justify-center items-center gap-2 py-1 rounded-md ${customer.balance === 0
+                                                            ? "bg-gray-100 text-gray-600"
+                                                            : customer.balance! > 0
+                                                                ? "bg-red-100 text-red-600"
+                                                                : "bg-green-100 text-green-600"
+                                                        }`}
+                                                >
+                                                    <IndianRupee />
+                                                    {customer.balance}
+                                                </Badge>
+                                                <div
+                                                    className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition"
+                                                >
+                                                    {customer.balance === 0
+                                                        ? "No balance"
+                                                        : customer.balance! > 0
+                                                            ? "You owe customer"
+                                                            : "Customer owes you"}
+                                                </div>
+                                            </div>
                                         </TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                className={`px-3 py-1 rounded-md ${customer.receivable ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-600"}`}
-                                            >
-                                                <IndianRupee /> {customer.receivable || "-"}
-                                            </Badge>
-                                        </TableCell>
+
+
+
                                         <TableCell className="max-w-[150px] truncate">
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
@@ -388,8 +394,8 @@ const ManageCustomers = () => {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    <SelectItem value="due">Payment</SelectItem>
-                                    <SelectItem value="receivable">Receive</SelectItem>
+                                    <SelectItem value="due">Paid to Customer</SelectItem>
+                                    <SelectItem value="receivable">Received from Customer</SelectItem>
                                 </SelectGroup>
                             </SelectContent>
                         </Select>

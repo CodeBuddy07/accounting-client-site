@@ -1,9 +1,11 @@
 import MainLayout from "@/Dashboard/MainLayout";
+import ErrorPage from "@/Dashboard/Pages/ErrorPage";
 import Home from "@/Dashboard/Pages/Home";
 import Login from "@/Dashboard/Pages/Login";
 import ManageCustomers from "@/Dashboard/Pages/ManageCustomer";
 import ProductManagement from "@/Dashboard/Pages/ProductManagement";
 import ResetPassword from "@/Dashboard/Pages/ResetPassword";
+import ResetPasswordPage from "@/Dashboard/Pages/Settings";
 import Settings from "@/Dashboard/Pages/Settings";
 import TransactionsPage from "@/Dashboard/Pages/Transaction";
 import ProtectedRoute from "@/lib/ProtectedRoutes";
@@ -13,6 +15,7 @@ const Routes = createBrowserRouter([
     {
       path: "/",
       element: <ProtectedRoute><MainLayout/></ProtectedRoute>,
+      errorElement: <ErrorPage/>,
       children: [
         {
           index: true,
@@ -34,15 +37,21 @@ const Routes = createBrowserRouter([
           path: "transactions/:type",
           element: <TransactionsPage/>
         },
+        {
+          path: "settings/general",
+          element: <ResetPasswordPage/>
+        },
       ]
     },
     {
       path: "log-in",
-      element: <Login/>
+      element: <Login/>,
+      errorElement: <ErrorPage/>,
     },
     {
       path: "reset-password/:resetToken",
-      element: <ResetPassword/>
+      element: <ResetPassword/>,
+      errorElement: <ErrorPage/>,
     },
   ]);
 

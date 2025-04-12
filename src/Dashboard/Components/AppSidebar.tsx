@@ -1,7 +1,5 @@
 import {
   ArrowRightLeftIcon,
-  AudioWaveform,
-  Command,
   GalleryVerticalEnd,
 } from "lucide-react"
 
@@ -20,11 +18,8 @@ import NavUser from "./NavUser";
 import {
   Package,
   Users,
-  FileText,
-  CreditCard,
   BarChart3,
   Settings,
-  Receipt,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAdmin";
 
@@ -38,19 +33,9 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
+      name: "Alpha Media",
       logo: GalleryVerticalEnd,
       plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
     },
   ],
   navMain: [
@@ -82,34 +67,6 @@ const data = {
         { title: "All Purchase", url: "/transactions/purchases" },
         { title: "All Sells", url: "/transactions/sells" },
         { title: "All Expenses", url: "/transactions/expenses" },
-      ],
-    },
-    {
-      title: "Purchases",
-      url: "/purchases",
-      icon: CreditCard,
-      items: [
-        { title: "All Purchases", url: "/purchases" },
-        { title: "New Purchase", url: "/purchases/add" },
-      ],
-    },
-    {
-      title: "Expenses",
-      url: "/expenses",
-      icon: Receipt,
-      items: [
-        { title: "All Expenses", url: "/expenses" },
-        { title: "New Expense", url: "/expenses/add" },
-      ],
-    },
-    {
-      title: "Reports",
-      url: "/reports",
-      icon: FileText,
-      items: [
-        { title: "Sales Report", url: "/reports/sales" },
-        { title: "Profit & Loss", url: "/reports/profit-loss" },
-        { title: "Stock Report", url: "/reports/stock" },
       ],
     },
     {

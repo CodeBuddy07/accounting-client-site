@@ -1,10 +1,7 @@
 import {
     BadgeCheck,
-    Bell,
     ChevronsUpDown,
-    CreditCard,
     LogOut,
-    Sparkles,
   } from "lucide-react"
   import {
     Avatar,
@@ -82,26 +79,20 @@ import { useAuth, useLogOut } from "@/hooks/useAdmin";
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <BadgeCheck />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              {/* <DropdownMenuItem>
                 <CreditCard />
                 Billing
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Bell />
                 Notifications
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={()=>{logoutMutation.mutate()}}>

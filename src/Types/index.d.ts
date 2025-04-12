@@ -3,8 +3,7 @@ interface Customer {
   _id: string;
   name: string;
   phone: string;
-  dues?: number;
-  receivable?: number;
+  balance?: number;
   note?: string;
 }
 
@@ -44,8 +43,7 @@ interface CustomerPayload {
   name: string;
   phone: string;
   note?: string;
-  dues?: number;
-  receivable?: number;
+  balance?: number;
 }
 
 interface CustomerQueryParams {
@@ -58,10 +56,12 @@ interface Transaction {
   _id?: string;
   type: string;
   customer?: Customer;
+  customerName?: string;
   customerId?: mongoose.Types.ObjectId;
   productId?: mongoose.Types.ObjectId;
   amount: number;
   date?: Date;
   note?: string;
+  paymentType?: 'cash' | 'due';
 }
 
