@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon, ChevronsUpDown, IndianRupee, X } from "lucide-react";
+import { CalendarIcon, ChevronsUpDown, IndianRupee, Trash2 } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -16,6 +16,7 @@ import {
 import { useProducts } from "@/hooks/useProducts";
 import { useCustomers } from "@/hooks/useCustomer";
 import { Textarea } from "@/components/ui/textarea";
+import { useAddTransaction } from "@/hooks/useTransaction";
 
 interface SelectedProduct extends Product {
     tempPrice: number;
@@ -37,6 +38,8 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
 
     const customerDropdownRef = useRef<HTMLDivElement>(null);
     const productDropdownRef = useRef<HTMLDivElement>(null);
+
+    const { mutate: addTransaction, isPending: transactionPending } = useAddTransaction();
 
     const { data: customerData, isLoading: customerLoading } = useCustomers({
         page: 1,
@@ -130,7 +133,9 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
 
 
         const saleData = {
+            type: "sell",
             customerId: selectedCustomer._id,
+            customerName: selectedCustomer.name,
             products: selectedProducts.map((p) => ({
                 productId: p._id,
                 price: p.tempPrice,
@@ -142,13 +147,21 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
             total: calculateTotal(),
         };
 
-        console.log("Submitting sale:", saleData);
-        setOpen(false);
-        setNote(""); // Add this with your other state resets
-        setSelectedCustomer(null);
-        setSelectedProducts([]);
-        setDate(new Date());
-        setPaymentType("cash");
+        addTransaction(
+            {
+                ...saleData
+            },
+            {
+                onSuccess: () => {
+                    setOpen(false);
+                    setNote(""); // Add this with your other state resets
+                    setSelectedCustomer(null);
+                    setSelectedProducts([]);
+                    setDate(new Date());
+                    setPaymentType("cash");
+                }
+            }
+        );  
     };
 
     return (
@@ -164,7 +177,7 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
 
                 {/* Customer Selection */}
                 <div className="flex flex-col md:flex-row gap-4 items-start justify-center">
-                    <div className="flex-1">
+                    <div className="flex-1 w-full">
                         <div className=" space-y-2">
                             <Label htmlFor="customer" className="text-right">
                                 Customer
@@ -198,13 +211,13 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                                 {customerData?.data?.map((customer: Customer) => (
                                                     <li
                                                         key={customer._id}
-                                                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                                                        className="p-2 hover:bg-gray-100 border-b font-semibold cursor-pointer"
                                                         onClick={() => {
                                                             setSelectedCustomer(customer);
                                                             setShowCustomerDropdown(false);
                                                         }}
                                                     >
-                                                        {customer.name} ({customer.phone})
+                                                        {customer.name} (<span className="text-sm font-normal">{customer.phone}</span>)
                                                     </li>
                                                 ))}
                                             </ul>
@@ -248,10 +261,10 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                                 {productData?.data?.map((product: Product) => (
                                                     <li
                                                         key={product._id}
-                                                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                                                        className="p-2 hover:bg-gray-100 border-b font-semibold flex items-center cursor-pointer"
                                                         onClick={() => handleProductSelect(product)}
                                                     >
-                                                        {product.name} - ${product.sellingPrice}
+                                                        {product.name} (<span className="text-sm flex items-center font-normal justify-center"><IndianRupee size={12}/> {product.sellingPrice}</span>)
                                                     </li>
                                                 ))}
                                             </ul>
@@ -265,7 +278,7 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                         {selectedProducts.length > 0 && (
                             <div className="space-y-2 mt-2">
 
-                                <div className="col-span-3 space-y-2">
+                                <div className=" space-y-2">
                                     {selectedProducts.map((product) => (
                                         <div
                                             key={product._id}
@@ -273,7 +286,7 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                         >
                                             <div className="flex-1">
                                                 <p className="font-medium">{product.name}</p>
-                                                <div className="flex gap-2 mt-1">
+                                                <div className="flex items-center gap-2 mt-1">
                                                     <Input
                                                         type="number"
                                                         value={product.tempPrice}
@@ -291,8 +304,9 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                                         className="w-16 h-8"
                                                         min="1"
                                                     />
-                                                    <span className="flex items-center">
-                                                        = ${(product.tempPrice * product.quantity).toFixed(2)}
+                                                    =
+                                                    <span className="flex items-center justify-center">
+                                                         <IndianRupee size={13}/> {(product.tempPrice * product.quantity)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -301,7 +315,7 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                                 size="sm"
                                                 onClick={() => removeProduct(product._id)}
                                             >
-                                                <X className="h-4 w-4" />
+                                                <Trash2 className="h-4 w-4 mt-6 text-red-500" />
                                             </Button>
                                         </div>
                                     ))}
@@ -310,7 +324,7 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                         )}
                     </div>
 
-                    <div className="flex-1">
+                    <div className="flex-1 w-full">
                         {/* Date Picker */}
                         <div className="space-y-2">
                             <Label htmlFor="date" className="text-right">
@@ -360,7 +374,7 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                     value={note}
                                     onChange={(e) => setNote(e.target.value)}
                                     placeholder="Additional notes about this sell..."
-                                    className="min-h-[100px]"
+                                    className="min-h-[100px] w-full"
                                 />
                             </div>
                         </div>
@@ -398,10 +412,10 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
 
 
                 <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setOpen(false)}>
+                    <Button disabled={transactionPending} variant="outline" onClick={() => setOpen(false)}>
                         Cancel
                     </Button>
-                    <Button onClick={handleSubmit}>Create Sale</Button>
+                    <Button onClick={handleSubmit}>{ transactionPending? "Creating...": "Create Sell"}</Button>
                 </div>
             </DialogContent>
         </Dialog>

@@ -6,15 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon, IndianRupee } from "lucide-react";
 
 export function ExpenseDialog({ children }: { children: React.ReactNode }) {
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [open, setOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -34,100 +33,114 @@ export function ExpenseDialog({ children }: { children: React.ReactNode }) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center">Add New Expense</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-center">Add New Expense</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Name Field */}
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium">
-              Expense Name *
-            </Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Office Supplies"
-              className="h-12 text-base"
-              required
-            />
-          </div>
-
-          {/* Amount Field */}
-          <div className="space-y-2">
-            <Label htmlFor="amount" className="text-sm font-medium">
-              Amount *
-            </Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {/* Name Field - Left Column */}
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium">
+                Expense Name *
+              </Label>
               <Input
-                id="amount"
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-                className="h-12 text-base pl-8"
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Office Supplies"
+                className="h-10 text-sm"
                 required
-                min="0"
-                step="0.01"
+              />
+            </div>
+
+            {/* Date Picker - Right Column */}
+            <div className="space-y-2">
+              <Label htmlFor="date" className="text-sm font-medium">
+                Date *
+              </Label>
+              <div className="relative">
+                <div className="relative">
+                  <Input
+                    id="date"
+                    type="text"
+                    readOnly
+                    value={date ? format(date, "PPP") : ""}
+                    placeholder="Select date"
+                    onClick={() => setShowDatePicker(!showDatePicker)}
+                    className="w-full h-10 text-sm cursor-pointer"
+                  />
+                  <CalendarIcon
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50"
+                  />
+                </div>
+
+                {showDatePicker && (
+                  <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-md border border-gray-200">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={(newDate) => {
+                        if (newDate) {
+                          setDate(newDate);
+                          setShowDatePicker(false);
+                        }
+                      }}
+                      initialFocus
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Amount Field - Left Column */}
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="text-sm font-medium">
+                Amount *
+              </Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"> <IndianRupee size={12}/> </span>
+                <Input
+                  id="amount"
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="h-10 text-sm pl-8"
+                  required
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+            </div>
+
+            {/* Note Field - Right Column */}
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="note" className="text-sm font-medium">
+                Note
+              </Label>
+              <Textarea
+                id="note"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Additional details about this expense..."
+                className="min-h-[80px] text-sm"
               />
             </div>
           </div>
 
-          {/* Date Picker */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Date *</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full h-12 justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Note Field */}
-          <div className="space-y-2">
-            <Label htmlFor="note" className="text-sm font-medium">
-              Note
-            </Label>
-            <Textarea
-              id="note"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Additional details about this expense..."
-              className="min-h-[100px]"
-            />
-          </div>
-
           {/* Submit Button */}
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex justify-end gap-2 pt-2">
             <Button
               variant="outline"
               type="button"
               onClick={() => setOpen(false)}
-              className="h-12 px-6"
+              className="h-10 px-4 text-sm"
             >
               Cancel
             </Button>
-            <Button type="submit" className="h-12 px-6">
+            <Button type="submit" className="h-10 px-4 text-sm">
               Add Expense
             </Button>
           </div>

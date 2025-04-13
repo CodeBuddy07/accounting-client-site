@@ -33,7 +33,7 @@ const ManageCustomers = () => {
 
     const [payment, setPayment] = useState<Transaction>({
         type: "",
-        amount: 0,
+        total: 0,
     });
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -87,8 +87,8 @@ const ManageCustomers = () => {
             return;
         }
 
-        const amount = Number(payment.amount);
-        if (!amount || amount <= 0) {
+        const total = Number(payment.total);
+        if (!total || total <= 0) {
             toast.error("Please enter a valid payment amount.");
             return;
         }
@@ -104,15 +104,15 @@ const ManageCustomers = () => {
                 type: payment.type,
                 customerId: selectedCustomer._id,
                 customerName: selectedCustomer.name,
-                amount,
-                note: `Manual entry: ৳${amount} ${payment.type == "due" ? "Paid to" : "Received from" } ${selectedCustomer.name}`,
+                total,
+                note: `Manual entry: ৳${total} ${payment.type == "due" ? "Paid to" : "Received from" } ${selectedCustomer.name}`,
                 paymentType: "due"
             },
             {
                 onSuccess: () => {
                     setPayment({
                         type: "",
-                        amount: 0,
+                        total: 0,
                     });
                     setIsPayDialogOpen(false);
                     setSelectedCustomer(null);
@@ -403,8 +403,8 @@ const ManageCustomers = () => {
                         <Input
                             type="number"
                             placeholder="Enter amount"
-                            defaultValue={payment.amount}
-                            onChange={(e) => setPayment({ ...payment, amount: Number(e.target.value) })}
+                            defaultValue={payment.total || ''}
+                            onChange={(e) => setPayment({ ...payment, total: Number(e.target.value) })}
                         />
                     </div>
                     <Button

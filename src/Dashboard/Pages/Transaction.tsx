@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Inbox, ChevronRight } from "lucide-react";
+import { Search, Inbox, ChevronRight, IndianRupee } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -33,7 +33,7 @@ const TransactionPage = () => {
         type: type === "all" ? undefined : type,
     });
 
-    console.log(transactionData);
+    console.log("hd", transactionData);
 
     const handleFromDateChange = (date: Date | undefined) => {
         if (!date) return;
@@ -45,7 +45,7 @@ const TransactionPage = () => {
                 : prev?.to,
         }));
     };
-    
+
     const handleToDateChange = (date: Date | undefined) => {
         if (!date) return;
         const normalizedToDate = normalizeEndOfDay(date);
@@ -54,24 +54,24 @@ const TransactionPage = () => {
             to: normalizedToDate,
         }));
     };
-    
+
     // Function to normalize to the start of the day (00:00:00)
     const normalizeStartOfDay = (date: Date) => {
         const normalized = new Date(date);
         normalized.setHours(0, 0, 0, 0); // Set to the beginning of the day (00:00:00)
         return normalized;
     };
-    
+
     // Function to normalize to the end of the day (23:59:59.999)
     const normalizeEndOfDay = (date: Date) => {
         const normalized = new Date(date);
         normalized.setHours(23, 59, 59, 999); // Set to the end of the day (23:59:59.999)
         return normalized;
     };
-    
+
     // Today's date normalized to the start of the day
     const today = normalizeStartOfDay(new Date());
-    
+
 
     return (
         <div className="p-6 space-y-4">
@@ -93,63 +93,63 @@ const TransactionPage = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                <Popover>
-    <PopoverTrigger asChild>
-        <Button variant="outline" className="w-[150px] justify-start">
-            {dateRange?.from ? (
-                format(dateRange.from, "MMM dd, yyyy")
-            ) : (
-                <span>Start date</span>
-            )}
-        </Button>
-    </PopoverTrigger>
-    <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-            mode="single"
-            selected={dateRange?.from}
-            onSelect={handleFromDateChange}
-            initialFocus
-            disabled={(date) => {
-                const normalizedDate = normalizeStartOfDay(date);
-                const todayNormalized = normalizeStartOfDay(today);
-                const toDateNormalized = dateRange?.to ? normalizeEndOfDay(dateRange.to) : todayNormalized; // Fallback to today's date if `to` is undefined
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-[150px] justify-start">
+                                {dateRange?.from ? (
+                                    format(dateRange.from, "MMM dd, yyyy")
+                                ) : (
+                                    <span>Start date</span>
+                                )}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                                mode="single"
+                                selected={dateRange?.from}
+                                onSelect={handleFromDateChange}
+                                initialFocus
+                                disabled={(date) => {
+                                    const normalizedDate = normalizeStartOfDay(date);
+                                    const todayNormalized = normalizeStartOfDay(today);
+                                    const toDateNormalized = dateRange?.to ? normalizeEndOfDay(dateRange.to) : todayNormalized; // Fallback to today's date if `to` is undefined
 
-                // Disable if date is in the future or after the `to` date
-                return normalizedDate > todayNormalized || normalizedDate > toDateNormalized;
-            }}
-        />
-    </PopoverContent>
-</Popover>
+                                    // Disable if date is in the future or after the `to` date
+                                    return normalizedDate > todayNormalized || normalizedDate > toDateNormalized;
+                                }}
+                            />
+                        </PopoverContent>
+                    </Popover>
 
-<ChevronRight className="text-gray-500 w-4 h-4" />
+                    <ChevronRight className="text-gray-500 w-4 h-4" />
 
-<Popover>
-    <PopoverTrigger asChild>
-        <Button variant="outline" className="w-[150px] justify-start">
-            {dateRange?.to ? (
-                format(dateRange.to, "MMM dd, yyyy")
-            ) : (
-                <span>End date</span>
-            )}
-        </Button>
-    </PopoverTrigger>
-    <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-            mode="single"
-            selected={dateRange?.to}
-            onSelect={handleToDateChange}
-            initialFocus
-            disabled={(date) => {
-                const normalizedDate = normalizeEndOfDay(date);
-                const todayNormalized = normalizeEndOfDay(today);
-                const fromNormalized = dateRange.from!; // Only normalize `from` if it exists
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-[150px] justify-start">
+                                {dateRange?.to ? (
+                                    format(dateRange.to, "MMM dd, yyyy")
+                                ) : (
+                                    <span>End date</span>
+                                )}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                                mode="single"
+                                selected={dateRange?.to}
+                                onSelect={handleToDateChange}
+                                initialFocus
+                                disabled={(date) => {
+                                    const normalizedDate = normalizeEndOfDay(date);
+                                    const todayNormalized = normalizeEndOfDay(today);
+                                    const fromNormalized = dateRange.from!; // Only normalize `from` if it exists
 
-                // Disable if date is in the future or earlier than the `from` date (if defined)
-                return normalizedDate > todayNormalized || (fromNormalized && normalizedDate < fromNormalized);
-            }}
-        />
-    </PopoverContent>
-</Popover>
+                                    // Disable if date is in the future or earlier than the `from` date (if defined)
+                                    return normalizedDate > todayNormalized || (fromNormalized && normalizedDate < fromNormalized);
+                                }}
+                            />
+                        </PopoverContent>
+                    </Popover>
 
                 </div>
             </div>
@@ -161,11 +161,12 @@ const TransactionPage = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Type</TableHead>
+                                    <TableHead>Payment Type</TableHead>
                                     <TableHead>Customer</TableHead>
                                     <TableHead>Product</TableHead>
                                     <TableHead>Amount</TableHead>
                                     <TableHead>Note</TableHead>
+                                    <TableHead>Type</TableHead>
                                     <TableHead>Date</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -193,10 +194,28 @@ const TransactionPage = () => {
                                 ) : (
                                     transactionData?.data?.map((txn: Transaction) => (
                                         <TableRow key={txn._id}>
-                                            <TableCell className="capitalize">{txn.type}</TableCell>
+                                            <TableCell className="capitalize">{txn.paymentType || "Unknown"}</TableCell>
                                             <TableCell>{txn.customerName || "—"}</TableCell>
-                                            <TableCell>{txn.productId?.name || "—"}</TableCell>
-                                            <TableCell>${txn.amount.toFixed(2)}</TableCell>
+                                            <TableCell>
+                                                {txn.products?.length ? (
+                                                    <Popover>
+                                                        <PopoverTrigger className="cursor-pointer underline">
+                                                            {txn.products.length} products
+                                                        </PopoverTrigger>
+                                                        <PopoverContent>
+                                                            <div className="space-y-2">
+                                                                {txn.products.map(p => (
+                                                                    <div key={p.productId.toString()} className="flex border-b justify-between">
+                                                                        <span>{p.productId?.name || "Unknown"}</span>
+                                                                        <span className="flex items-center gap-1">×{p.quantity} = <IndianRupee size={12}/> {p.price}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </PopoverContent>
+                                                    </Popover>
+                                                ) : "—"}
+                                            </TableCell>
+                                            <TableCell>${txn.total.toFixed(2)}</TableCell>
                                             <TableCell className="max-w-[150px] truncate">
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
@@ -205,6 +224,7 @@ const TransactionPage = () => {
                                                     <TooltipContent>{txn.note || "No note provided"}</TooltipContent>
                                                 </Tooltip>
                                             </TableCell>
+                                            <TableCell className="capitalize">{txn.type || "Unknown"}</TableCell>
                                             <TableCell>
                                                 {txn.date ? format(new Date(txn.date), "MMM dd, yyyy") : "—"}
                                             </TableCell>

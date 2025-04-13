@@ -46,6 +46,12 @@ interface CustomerPayload {
   balance?: number;
 }
 
+interface ProductItem {
+  productId: mongoose.Types.ObjectId | { _id: mongoose.Types.ObjectId; name: string; /* other product fields */ };
+  price: number;
+  quantity: number;
+}
+
 interface CustomerQueryParams {
   page?: number;
   limit?: number;
@@ -58,8 +64,8 @@ interface Transaction {
   customer?: Customer;
   customerName?: string;
   customerId?: mongoose.Types.ObjectId;
-  productId?: mongoose.Types.ObjectId;
-  amount: number;
+  products?: IProductItem[];
+  total: number;
   date?: Date;
   note?: string;
   paymentType?: 'cash' | 'due';

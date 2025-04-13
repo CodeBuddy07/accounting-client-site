@@ -16,6 +16,7 @@ export const useAddTransaction = () => {
             toast.success("Transaction Completed!");
             // Invalidate customer data to reflect updated dues/receivables
             queryClient.invalidateQueries({ queryKey: ["customers"] });
+            queryClient.invalidateQueries({ queryKey: ["transactions"] });
         },
         onError: () => {
             toast.error("Failed transaction.");
