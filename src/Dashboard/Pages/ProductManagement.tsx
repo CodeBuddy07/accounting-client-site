@@ -203,7 +203,7 @@ const ProductManagement = () => {
 
       {/* Product Table */}
       <div className="overflow-x-auto">
-        <Card className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ">
+        <Card className="bg-white dark:bg-stone-950 text-gray-900 dark:text-gray-100 ">
           <CardContent>
             <Table>
               <TableHeader>

@@ -57,6 +57,25 @@ export const useEditCustomer = () => {
   });
 };
 
+// Edit Customer
+export const useSMSCustomer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, message }: { id: string; message: string }) => {
+      const { data } = await axiosSecure.post(`/api/customers/${id}`, {message});
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success( data.message || "SMS sent successfully!");
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+    },
+    onError: () => {
+      toast.error("Failed to update customer.");
+    },
+  });
+};
+
 // Delete Customer
 export const useDeleteCustomer = () => {
   const queryClient = useQueryClient();
@@ -72,5 +91,28 @@ export const useDeleteCustomer = () => {
     onError: () => {
       toast.error("Failed to delete customer.");
     },
+  });
+};
+
+
+
+
+export const useCustomerReport = ({ page= 1, limit = 10, id }: CustomerReportQueryParams = {}) => {
+
+  return useQuery<CustomerReport>({
+    queryKey: ['customerReport', id, page, limit],
+    queryFn: async () => {
+      const { data } = await axiosSecure.get<CustomerReport>(
+        `/api/customers/${id}/report`,
+        {
+          params: { page, limit },
+        }
+      );
+      return data;
+    },
+    placeholderData: (prev) => prev, // Keep previous data while refreshing
+    staleTime: 1000 * 60 * 2, // 2 minutes stale time (same as products)
+    enabled: !!id, // Only enable query when customerId exists
+    retry: 2, // Retry failed requests twice
   });
 };

@@ -18,6 +18,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useCustomers } from "@/hooks/useCustomer";
 import { Textarea } from "@/components/ui/textarea";
 import { useAddTransaction } from "@/hooks/useTransaction";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface SelectedProduct extends Product {
     tempPrice: number;
@@ -26,6 +27,7 @@ interface SelectedProduct extends Product {
 
 export function BuyDialog({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
+    const [sms, setSMS] = useState(false);
     const [note, setNote] = useState("");
     const [supplierSearch, setSupplierSearch] = useState("");
     const [productSearch, setProductSearch] = useState("");
@@ -146,6 +148,7 @@ export function BuyDialog({ children }: { children: React.ReactNode }) {
             paymentType,
             total: calculateTotal(),
             note,
+            sms,
         };
 
         addTransaction(
@@ -155,7 +158,7 @@ export function BuyDialog({ children }: { children: React.ReactNode }) {
             {
                 onSuccess: () => {
                     setOpen(false);
-                    setNote(""); 
+                    setNote("");
                     setSelectedSupplier(null);
                     setSelectedProducts([]);
                     setDate(new Date());
@@ -202,7 +205,7 @@ export function BuyDialog({ children }: { children: React.ReactNode }) {
                                 </div>
 
                                 {showSupplierDropdown && (
-                                    <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-auto">
+                                    <div className="absolute z-10 mt-1 w-full bg-white dark:bg-stone-950 shadow-lg rounded-md border border-gray-200 dark:border-stone-700 max-h-60 overflow-auto">
                                         {supplierLoading ? (
                                             <div className="p-2 text-sm text-gray-500">Loading...</div>
                                         ) : supplierData?.data?.length === 0 ? (
@@ -212,7 +215,7 @@ export function BuyDialog({ children }: { children: React.ReactNode }) {
                                                 {supplierData?.data?.map((supplier: Customer) => (
                                                     <li
                                                         key={supplier._id}
-                                                        className="p-2 hover:bg-gray-100 border-b font-semibold cursor-pointer"
+                                                        className="p-2 hover:bg-gray-100 dark:hover:bg-stone-900 border-b font-semibold cursor-pointer"
                                                         onClick={() => {
                                                             setSelectedSupplier(supplier);
                                                             setShowSupplierDropdown(false);
@@ -252,17 +255,17 @@ export function BuyDialog({ children }: { children: React.ReactNode }) {
                                 </div>
 
                                 {showProductDropdown && (
-                                    <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-auto">
+                                    <div className="absolute z-10 mt-1 w-full bg-white dark:bg-stone-950 shadow-lg rounded-md border border-gray-200 dark:border-stone-700 max-h-60 overflow-auto ">
                                         {productLoading ? (
                                             <div className="p-2 text-sm text-gray-500">Loading...</div>
                                         ) : productData?.data?.length === 0 ? (
                                             <div className="p-2 text-sm text-gray-500">No products found</div>
                                         ) : (
-                                            <ul>
+                                            <ul className="">
                                                 {productData?.data?.map((product: Product) => (
                                                     <li
                                                         key={product._id}
-                                                        className="p-2 hover:bg-gray-100 border-b font-semibold flex items-center  cursor-pointer"
+                                                        className="p-2 hover:bg-gray-100 dark:hover:bg-stone-900 border-b font-semibold flex items-center  cursor-pointer"
                                                         onClick={() => handleProductSelect(product)}
                                                     >
                                                         {product.name} (<span className="text-sm flex items-center font-normal justify-center"><IndianRupee size={12} /> {product.buyingPrice}</span>)
@@ -347,7 +350,7 @@ export function BuyDialog({ children }: { children: React.ReactNode }) {
                                 </div>
 
                                 {showDatePicker && (
-                                    <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-md border border-gray-200 calendar-container">
+                                    <div className="absolute z-10 mt-1 bg-white dark:bg-stone-950 shadow-lg rounded-md border border-gray-200 dark:border-stone-700 calendar-container">
                                         <Calendar
                                             mode="single"
                                             selected={date}
@@ -401,6 +404,17 @@ export function BuyDialog({ children }: { children: React.ReactNode }) {
                             </div>
                         </div>
 
+                        {/* Automate SMS Sending */}
+                        <div className="flex items-center space-x-2 mt-4">
+                            <Checkbox defaultChecked={sms} onCheckedChange={(value) => setSMS(value === true)} id="terms" />
+                            <label
+                                htmlFor="terms"
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                               Send Automate Message.
+                            </label>
+                        </div>
+
                     </div>
                 </div>
 
@@ -416,7 +430,7 @@ export function BuyDialog({ children }: { children: React.ReactNode }) {
                     <Button disabled={transactionPending} variant="outline" onClick={() => setOpen(false)}>
                         Cancel
                     </Button>
-                    <Button onClick={handleSubmit}>{ transactionPending? "Creating...": "Create Purchase"}</Button>
+                    <Button onClick={handleSubmit}>{transactionPending ? "Creating..." : "Create Purchase"}</Button>
                 </div>
             </DialogContent>
         </Dialog>

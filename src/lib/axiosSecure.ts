@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 
@@ -12,14 +11,6 @@ const axiosSecure = axios.create({
   withCredentials: true, // Include credentials (cookies) in requests
 });
 
-// Add a request interceptor to include the token (optional)
-// api.interceptors.request.use((config) => {
-//   const token = localStorage.getItem("token");
-//   if (token) {
-//     config.headers.Authorization = `Bearer ${token}`;
-//   }
-//   return config;
-// });
 
 // Add a response interceptor to handle unauthorized errors
 axiosSecure.interceptors.response.use(
@@ -34,9 +25,7 @@ axiosSecure.interceptors.response.use(
         // Show a toast notification
         toast.error("Session expired. Please log in again.");
 
-        // Redirect to the login page
-        const navigate = useNavigate();
-        navigate("/log-in");
+        window.location.href = "/log-in"; // Redirect to login page
       } catch (logoutError) {
         console.error("Logout error:", logoutError);
       }

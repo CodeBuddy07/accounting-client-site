@@ -49,12 +49,17 @@ export const useChangePassword = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (passwords) => {
-      await axiosSecure.post("/api/admin/change-password", passwords);
+    mutationFn: async ({oldPassword, newPassword}: {oldPassword: string, newPassword: string}) => {
+      await axiosSecure.post("/api/admin/change-password", {oldPassword, newPassword});
     },
     onSuccess: () => {
       // Invalidate any relevant queries (e.g., admin profile)
       queryClient.invalidateQueries({ queryKey: ["admin"] });
+      toast.success("Password changed successfully!");
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      console.error("Change password error:", error);
+      toast.error(error.response?.data?.message || "An error occurred while changing the password.");
     },
   });
 };

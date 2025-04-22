@@ -20,6 +20,7 @@ import {
   Users,
   BarChart3,
   Settings,
+  SquareLibrary 
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAdmin";
 
@@ -64,10 +65,15 @@ const data = {
       icon:  ArrowRightLeftIcon,
       items: [
         { title: "All Transactions", url: "/transactions/all" },
-        { title: "All Purchase", url: "/transactions/purchases" },
-        { title: "All Sells", url: "/transactions/sells" },
-        { title: "All Expenses", url: "/transactions/expenses" },
+        { title: "All Purchase", url: "/transactions/buy" },
+        { title: "All Sells", url: "/transactions/sell" },
+        { title: "All Expenses", url: "/transactions/expense" },
       ],
+    },
+    {
+      title: "Report",
+      url: "/report",
+      icon: SquareLibrary,
     },
     {
       title: "Settings",
@@ -75,7 +81,7 @@ const data = {
       icon: Settings,
       items: [
         { title: "General", url: "/settings/general" },
-        { title: "Billing", url: "/settings/billing" },
+        { title: "SMS Templates", url: "/settings/sms-templates" },
       ],
     },
   ],

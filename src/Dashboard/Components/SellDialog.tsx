@@ -17,6 +17,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useCustomers } from "@/hooks/useCustomer";
 import { Textarea } from "@/components/ui/textarea";
 import { useAddTransaction } from "@/hooks/useTransaction";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface SelectedProduct extends Product {
     tempPrice: number;
@@ -25,6 +26,7 @@ interface SelectedProduct extends Product {
 
 export function SellDialog({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
+    const [sms, setSMS] = useState(false);
     const [note, setNote] = useState("");
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [customerSearch, setCustomerSearch] = useState("");
@@ -144,6 +146,7 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
             date,
             paymentType,
             note,
+            sms,
             total: calculateTotal(),
         };
 
@@ -201,7 +204,7 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                 </div>
 
                                 {showCustomerDropdown && (
-                                    <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-auto">
+                                    <div className="absolute z-10 mt-1 w-full bg-white dark:bg-stone-950 shadow-lg rounded-md border border-gray-200 dark:border-stone-700 max-h-60 overflow-auto">
                                         {customerLoading ? (
                                             <div className="p-2 text-sm text-gray-500">Loading...</div>
                                         ) : customerData?.data?.length === 0 ? (
@@ -211,7 +214,7 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                                 {customerData?.data?.map((customer: Customer) => (
                                                     <li
                                                         key={customer._id}
-                                                        className="p-2 hover:bg-gray-100 border-b font-semibold cursor-pointer"
+                                                        className="p-2 hover:bg-gray-100 dark:hover:bg-stone-900 border-b font-semibold cursor-pointer"
                                                         onClick={() => {
                                                             setSelectedCustomer(customer);
                                                             setShowCustomerDropdown(false);
@@ -251,7 +254,7 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                 </div>
 
                                 {showProductDropdown && (
-                                    <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-auto">
+                                    <div className="absolute z-10 mt-1 w-full bg-white dark:bg-stone-950 shadow-lg rounded-md border border-gray-200 dark:border-stone-700 max-h-60 overflow-auto">
                                         {productLoading ? (
                                             <div className="p-2 text-sm text-gray-500">Loading...</div>
                                         ) : productData?.data?.length === 0 ? (
@@ -261,7 +264,7 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                                 {productData?.data?.map((product: Product) => (
                                                     <li
                                                         key={product._id}
-                                                        className="p-2 hover:bg-gray-100 border-b font-semibold flex items-center cursor-pointer"
+                                                        className="p-2 hover:bg-gray-100 dark:hover:bg-stone-900 border-b font-semibold flex items-center cursor-pointer"
                                                         onClick={() => handleProductSelect(product)}
                                                     >
                                                         {product.name} (<span className="text-sm flex items-center font-normal justify-center"><IndianRupee size={12}/> {product.sellingPrice}</span>)
@@ -346,7 +349,7 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                 </div>
 
                                 {showDatePicker && (
-                                    <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-md border border-gray-200">
+                                    <div className="absolute z-10 mt-1 bg-white dark:bg-stone-950 shadow-lg rounded-md border border-gray-200 dark:border-stone-700">
                                         <Calendar
                                             mode="single"
                                             selected={date}
@@ -399,6 +402,19 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                 </Select>
                             </div>
                         </div>
+
+                        {/* Automate SMS Sending */}
+                        <div className="flex items-center space-x-2 mt-4">
+                            <Checkbox defaultChecked={sms} onCheckedChange={(value) => setSMS(value === true)} id="terms" />
+                            <label
+                                htmlFor="terms"
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                               Send Automate Message.
+                            </label>
+                        </div>
+
+
                     </div>
                 </div>
 

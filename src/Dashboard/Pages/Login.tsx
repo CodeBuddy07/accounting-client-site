@@ -48,7 +48,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-stone-950 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">
@@ -68,7 +68,7 @@ export default function Login() {
             <div className="space-y-6">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label className="mb-2" htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -95,7 +95,7 @@ export default function Login() {
             <div className="space-y-6">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label className="mb-2" htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -105,7 +105,7 @@ export default function Login() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="password">Password</Label>
+                  <Label className="mb-2" htmlFor="password">Password</Label>
                   <Input
                     id="password"
                     type="password"

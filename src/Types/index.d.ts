@@ -69,5 +69,93 @@ interface Transaction {
   date?: Date;
   note?: string;
   paymentType?: 'cash' | 'due';
+  sms?: boolean
 }
+
+interface CustomerReport {
+  customerInfo: {
+    name: string;
+    contact: string;
+    balance: number;
+  };
+  totals: {
+    totalPurchases: number;
+    totalSales: number;
+    amountOwed: number;
+    amountDue: number;
+  };
+  transactions: {
+    data: Array<{
+      id: string;
+      type: 'buy' | 'sell' | 'receivable' | 'due' | 'expense';
+      date: string;
+      amount: number;
+      paymentType: 'cash' | 'due';
+      products: Array<{
+        name: string;
+        price: number;
+        quantity: number;
+      }>;
+      note?: string;
+    }>;
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalTransactions: number;
+      transactionsPerPage: number;
+    };
+  };
+}
+
+interface CustomerReportQueryParams {
+  page?: number;
+  limit?: number;
+  id?: string;
+}
+
+interface ITemplate {
+  _id?: string;
+  name: string;
+  content: string;
+}
+
+
+interface DashboardStats {
+  totalSales: number;
+  totalPurchases: number;
+  totalExpenses: number;
+  totalDue: number;
+  totalReceivable: number;
+  netCashFlow: number;
+  customerCount: number;
+  productCount: number;
+  topSellingProducts: TopProduct[];
+  topCustomers: TopCustomer[];
+  monthlyTrend: MonthlyTrend[];
+  inventoryValue: number;
+  profitMargin: number;
+  recentTransactions: Transaction[];
+}
+
+interface TopProduct {
+  _id: string;
+  name: string;
+  totalQuantity: number;
+  totalSales: number;
+}
+
+interface TopCustomer {
+  _id: string;
+  name: string;
+  totalSpent: number;
+  count: number;
+}
+
+interface MonthlyTrend {
+  month: string;
+  total: number;
+}
+
+
+
 

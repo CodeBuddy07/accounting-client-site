@@ -10,11 +10,12 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { PlusCircle, Edit, Trash2, Search, CreditCard, IndianRupee, Send, SendHorizonal, Inbox, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useAddCustomer, useCustomers, useDeleteCustomer, useEditCustomer } from "@/hooks/useCustomer";
+import { useAddCustomer, useCustomers, useDeleteCustomer, useEditCustomer, useSMSCustomer } from "@/hooks/useCustomer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAddTransaction } from "@/hooks/useTransaction";
 import { SmartPagination } from "@/components/ui/SmartPagination";
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 
 
@@ -22,6 +23,8 @@ import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
 
 const ManageCustomers = () => {
     const [search, setSearch] = useState("");
+    const [sms, setSMS] = useState(false);
+    const [message, setMessage] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const { data: customerData, isLoading } = useCustomers({ page: currentPage, limit: 10, search });
     const [newCustomer, setNewCustomer] = useState<CustomerPayload>({
@@ -41,6 +44,21 @@ const ManageCustomers = () => {
     const [isPayDialogOpen, setIsPayDialogOpen] = useState(false);
     const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
 
+    const useableVariables = [
+        "name", 
+        "balance",
+      ]
+    
+      const extractVariables = (content: string): string[] => {
+        const regex = /\{([^}]+)\}/g
+        const matches = []
+        let match
+        while ((match = regex.exec(content)) !== null) {
+          matches.push(match[1])
+        }
+        return [...new Set(matches)] // Remove duplicates
+      }
+
     const [editingCustomer, setEditingCustomer] = useState<CustomerPayload>({
         name: "",
         phone: "",
@@ -52,6 +70,7 @@ const ManageCustomers = () => {
     const { mutate: deleteCustomer } = useDeleteCustomer();
     const { mutate: editCustomer, isPending: editLoading } = useEditCustomer();
     const { mutate: addTransaction, isPending: transactionPending } = useAddTransaction();
+    const { mutate: sendSMS, isPending: sendingPending } = useSMSCustomer();
 
     const handleAddCustomer = () => {
         if (!newCustomer.name || !newCustomer.phone) {
@@ -62,6 +81,25 @@ const ManageCustomers = () => {
         addCustomer(newCustomer);
         setNewCustomer({ name: "", phone: "", note: "", balance: 0 });
         setIsDialogOpen(false);
+    };
+
+    const handleSMSSending = () => {
+        if (!message) {
+            toast.error("Required Feilds", { description: "Message is required!" })
+            return;
+        }
+        if (!selectedCustomer) {
+            toast.error("No customer selected.");
+            return;
+        }
+        sendSMS({ id: selectedCustomer._id, message }, {
+            onSuccess: () => {
+                setIsMessageDialogOpen(false);
+                setMessage(null);
+                setSelectedCustomer(null);
+            }
+        });
+
     };
 
     const handleEditCustomer = (id: string) => {
@@ -105,8 +143,9 @@ const ManageCustomers = () => {
                 customerId: selectedCustomer._id,
                 customerName: selectedCustomer.name,
                 total,
-                note: `Manual entry: ৳${total} ${payment.type == "due" ? "Paid to" : "Received from" } ${selectedCustomer.name}`,
-                paymentType: "due"
+                note: `Manual entry: ৳${total} ${payment.type == "due" ? "Paid to" : "Received from"} ${selectedCustomer.name}`,
+                paymentType: "due",
+                sms
             },
             {
                 onSuccess: () => {
@@ -211,7 +250,7 @@ const ManageCustomers = () => {
             </div>
 
             {/* Customer Table */}
-            <Card className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ">
+            <Card className="bg-white dark:bg-stone-950 text-gray-900 dark:text-gray-100 ">
                 <CardContent>
                     <Table>
                         <TableHeader>
@@ -261,10 +300,10 @@ const ManageCustomers = () => {
                                             >
                                                 <Badge
                                                     className={`px-3 flex justify-center items-center gap-2 py-1 rounded-md ${customer.balance === 0
-                                                            ? "bg-gray-100 text-gray-600"
-                                                            : customer.balance! > 0
-                                                                ? "bg-red-100 text-red-600"
-                                                                : "bg-green-100 text-green-600"
+                                                        ? "bg-gray-100 text-gray-600"
+                                                        : customer.balance! > 0
+                                                            ? "bg-red-100 text-red-600"
+                                                            : "bg-green-100 text-green-600"
                                                         }`}
                                                 >
                                                     <IndianRupee />
@@ -394,8 +433,8 @@ const ManageCustomers = () => {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    <SelectItem value="due">Paid to Customer</SelectItem>
-                                    <SelectItem value="receivable">Received from Customer</SelectItem>
+                                    <SelectItem value="due">Pay to Customer</SelectItem>
+                                    <SelectItem value="receivable">Receive from Customer</SelectItem>
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
@@ -407,6 +446,19 @@ const ManageCustomers = () => {
                             onChange={(e) => setPayment({ ...payment, total: Number(e.target.value) })}
                         />
                     </div>
+
+                    {/* Automate SMS Sending */}
+                    <div className="flex items-center space-x-2 mb-4">
+                        <Checkbox defaultChecked={sms} onCheckedChange={(value) => setSMS(value === true)} id="terms" />
+                        <label
+                            htmlFor="terms"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                            Send Automate Message.
+                        </label>
+                    </div>
+
+
                     <Button
                         disabled={transactionPending}
                         onClick={handlePayment}
@@ -434,10 +486,26 @@ const ManageCustomers = () => {
                     </DialogHeader>
                     <Textarea
                         placeholder="Write a message..."
+                        onChange={(e) => setMessage(e.target.value)}
                     />
 
-                    <Button className="w-full">
-                        Send <SendHorizonal size={20} />
+                    <div className="space-y-2">
+                        <div className="text-sm font-medium">Variables You Can Use:</div>
+                        <div className="flex flex-wrap gap-2">
+                            {useableVariables.map((variable) => (
+                                <Badge key={variable} className={extractVariables(message!).includes(variable) ? "bg-green-500" : ""} variant="outline">
+                                    {`{${variable}}`}
+                                </Badge>
+                            ))}
+                        </div>
+                    </div>
+
+                    <Button
+                        className="w-full"
+                        disabled={sendingPending}
+                        onClick={handleSMSSending}
+                    >
+                        {sendingPending ? "Sending..." : "Send"} <SendHorizonal size={20} />
                     </Button>
                 </DialogContent>
             </Dialog>

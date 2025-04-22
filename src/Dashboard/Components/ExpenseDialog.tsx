@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { CalendarIcon, IndianRupee } from "lucide-react";
+import { useAddTransaction } from "@/hooks/useTransaction";
 
 export function ExpenseDialog({ children }: { children: React.ReactNode }) {
   const [name, setName] = useState("");
@@ -16,16 +17,28 @@ export function ExpenseDialog({ children }: { children: React.ReactNode }) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [open, setOpen] = useState(false);
 
+  const { mutate: addTransaction, isPending: transactionPending } = useAddTransaction();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log({ name, note, amount, date });
-    setOpen(false);
-    // Reset form
-    setName("");
-    setNote("");
-    setAmount("");
-    setDate(new Date());
+
+    addTransaction({
+      type: "expense",
+      note: `${name} - ${note}`,
+      total: parseInt(amount),
+      date,
+      paymentType: "cash",
+
+    }, {
+      onSuccess: () => {
+        setOpen(false);
+        setName("");
+        setNote("");
+        setAmount("");
+        setDate(new Date());
+      }
+    });
+
   };
 
   return (
@@ -77,7 +90,7 @@ export function ExpenseDialog({ children }: { children: React.ReactNode }) {
                 </div>
 
                 {showDatePicker && (
-                  <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-md border border-gray-200">
+                  <div className="absolute z-10 mt-1 bg-white dark:bg-stone-950 shadow-lg rounded-md border border-gray-200 dark:border-stone-700">
                     <Calendar
                       mode="single"
                       selected={date}
@@ -100,7 +113,7 @@ export function ExpenseDialog({ children }: { children: React.ReactNode }) {
                 Amount *
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"> <IndianRupee size={12}/> </span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"> <IndianRupee size={12} /> </span>
                 <Input
                   id="amount"
                   type="number"
@@ -140,8 +153,12 @@ export function ExpenseDialog({ children }: { children: React.ReactNode }) {
             >
               Cancel
             </Button>
-            <Button type="submit" className="h-10 px-4 text-sm">
-              Add Expense
+            <Button
+             type="submit" 
+             className="h-10 px-4 text-sm"
+             disabled={transactionPending}
+             >
+              {transactionPending ? "Adding..." : "Add Expense"}
             </Button>
           </div>
         </form>

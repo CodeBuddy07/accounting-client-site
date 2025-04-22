@@ -33,8 +33,6 @@ const TransactionPage = () => {
         type: type === "all" ? undefined : type,
     });
 
-    console.log("hd", transactionData);
-
     const handleFromDateChange = (date: Date | undefined) => {
         if (!date) return;
         const normalizedFromDate = normalizeStartOfDay(date);
@@ -156,7 +154,7 @@ const TransactionPage = () => {
 
             {/* Transactions Table */}
             <div className="overflow-x-auto">
-                <Card className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                <Card className="bg-white dark:bg-stone-950 text-gray-900 dark:text-gray-100">
                     <CardContent>
                         <Table>
                             <TableHeader>
@@ -224,7 +222,7 @@ const TransactionPage = () => {
                                                     <TooltipContent>{txn.note || "No note provided"}</TooltipContent>
                                                 </Tooltip>
                                             </TableCell>
-                                            <TableCell className="capitalize">{txn.type || "Unknown"}</TableCell>
+                                            <TableCell className="capitalize">{txn.type == "due" ? "Due Adjustment" : txn.type == "receivable" ? "Receivable Adjustment" : txn.type || "Unknown"}</TableCell>
                                             <TableCell>
                                                 {txn.date ? format(new Date(txn.date), "MMM dd, yyyy") : "—"}
                                             </TableCell>

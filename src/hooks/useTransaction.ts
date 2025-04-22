@@ -12,8 +12,9 @@ export const useAddTransaction = () => {
             const { data } = await axiosSecure.post("/api/transactions", transaction);
             return data;
         },
-        onSuccess: () => {
-            toast.success("Transaction Completed!");
+        onSuccess: (data) => {
+            console.log(data);
+            toast.success(data.message || "Transaction Completed!");
             // Invalidate customer data to reflect updated dues/receivables
             queryClient.invalidateQueries({ queryKey: ["customers"] });
             queryClient.invalidateQueries({ queryKey: ["transactions"] });
@@ -71,4 +72,6 @@ export const useTransactions = ({
         staleTime: 1000 * 60 * 2, // 2 minutes stale time
     });
 };
+
+
 
