@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Inbox, ChevronRight, IndianRupee } from "lucide-react";
+import { Search, Inbox, ChevronRight, DollarSign } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -205,7 +205,7 @@ const TransactionPage = () => {
                                                                 {txn.products.map(p => (
                                                                     <div key={p.productId.toString()} className="flex border-b justify-between">
                                                                         <span>{p.productId?.name || "Unknown"}</span>
-                                                                        <span className="flex items-center gap-1">×{p.quantity} = <IndianRupee size={12}/> {p.price}</span>
+                                                                        <span className="flex items-center gap-1">×{p.quantity} = <DollarSign size={12}/> {p.price}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>

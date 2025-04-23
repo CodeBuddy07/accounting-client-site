@@ -22,7 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Input } from "@/components/ui/input"
 import { useCustomerReport, useCustomers } from "@/hooks/useCustomer"
 import { Label } from "@/components/ui/label"
-import { ChevronsUpDown, IndianRupee } from "lucide-react"
+import { ChevronsUpDown, DollarSign } from "lucide-react"
 import { SmartPagination } from "@/components/ui/SmartPagination"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
@@ -191,7 +191,7 @@ export function CustomerReportPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl flex justify-start items-center gap-2 font-bold">
-                                    <IndianRupee /> {report.totals.totalPurchases.toFixed(2)}
+                                    <DollarSign /> {report.totals.totalPurchases.toFixed(2)}
                                 </div>
                             </CardContent>
                         </Card>
@@ -201,7 +201,7 @@ export function CustomerReportPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl flex justify-start items-center gap-2 font-bold">
-                                    <IndianRupee /> {report.totals.totalSales.toFixed(2)}
+                                    <DollarSign /> {report.totals.totalSales.toFixed(2)}
                                 </div>
                             </CardContent>
                         </Card>
@@ -211,7 +211,7 @@ export function CustomerReportPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl flex justify-start items-center gap-2 font-bold text-green-600">
-                                    <IndianRupee /> {report.totals.amountOwed.toFixed(2)}
+                                    <DollarSign /> {report.totals.amountOwed.toFixed(2)}
                                 </div>
                             </CardContent>
                         </Card>
@@ -221,7 +221,7 @@ export function CustomerReportPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl flex justify-start items-center gap-2 font-bold text-red-600">
-                                    <IndianRupee /> {report.totals.amountDue.toFixed(2)}
+                                    <DollarSign /> {report.totals.amountDue.toFixed(2)}
                                 </div>
                             </CardContent>
                         </Card>
@@ -235,7 +235,7 @@ export function CustomerReportPage() {
                         <CardContent>
                             <div className={`text-2xl flex gap-2 justify-start items-center font-bold ${report.customerInfo.balance > 0 ? 'text-green-600' : 'text-red-600'
                                 }`}>
-                                <IndianRupee /> {Math.abs(report.customerInfo.balance).toFixed(2)}{' '}
+                                <DollarSign /> {Math.abs(report.customerInfo.balance).toFixed(2)}{' '}
                                 <span className="text-sm font-normal text-muted-foreground">
                                     ({report.customerInfo.balance > 0 ? 'Customer owes us' : 'We owe customer'})
                                 </span>
@@ -289,7 +289,7 @@ export function CustomerReportPage() {
                                                                     {txn.products.map((p, idx) => (
                                                                         <div key={idx} className="flex border-b justify-between">
                                                                             <span>{p.name || "Unknown"}</span>
-                                                                            <span className="flex items-center gap-1">×{p.quantity} = <IndianRupee size={12} /> {p.price}</span>
+                                                                            <span className="flex items-center gap-1">×{p.quantity} = <DollarSign size={12} /> {p.price}</span>
                                                                         </div>
                                                                     ))}
                                                                 </div>
@@ -297,7 +297,7 @@ export function CustomerReportPage() {
                                                         </Popover>
                                                     ) : "—"}
                                                 </TableCell>
-                                                <TableCell className="flex justify-start items-center gap-2"> <IndianRupee size={16} /> {txn.amount.toFixed(2)}</TableCell>
+                                                <TableCell className="flex justify-start items-center gap-2"> <DollarSign size={16} /> {txn.amount.toFixed(2)}</TableCell>
                                                 <TableCell>
                                                     <Badge className={txn.paymentType === 'due' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}>
                                                         {txn.paymentType}

@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { PlusCircle, Edit, Trash2, Search, CreditCard, IndianRupee, Send, SendHorizonal, Inbox, Loader2 } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Search, CreditCard, Send, SendHorizonal, Inbox, Loader2, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { useAddCustomer, useCustomers, useDeleteCustomer, useEditCustomer, useSMSCustomer } from "@/hooks/useCustomer";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -306,7 +306,7 @@ const ManageCustomers = () => {
                                                             : "bg-green-100 text-green-600"
                                                         }`}
                                                 >
-                                                    <IndianRupee />
+                                                    <DollarSign />
                                                     {customer.balance}
                                                 </Badge>
                                                 <div

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon, ChevronsUpDown, IndianRupee, Trash2 } from "lucide-react";
+import { CalendarIcon, ChevronsUpDown, DollarSign, Trash2 } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -268,7 +268,7 @@ export function BuyDialog({ children }: { children: React.ReactNode }) {
                                                         className="p-2 hover:bg-gray-100 dark:hover:bg-stone-900 border-b font-semibold flex items-center  cursor-pointer"
                                                         onClick={() => handleProductSelect(product)}
                                                     >
-                                                        {product.name} (<span className="text-sm flex items-center font-normal justify-center"><IndianRupee size={12} /> {product.buyingPrice}</span>)
+                                                        {product.name} (<span className="text-sm flex items-center font-normal justify-center"><DollarSign size={12} /> {product.buyingPrice}</span>)
                                                     </li>
                                                 ))}
                                             </ul>
@@ -309,7 +309,7 @@ export function BuyDialog({ children }: { children: React.ReactNode }) {
                                                 />
                                                 =
                                                 <span className="flex items-center">
-                                                    <IndianRupee size={13} /> {(product.tempPrice * product.quantity)}
+                                                    <DollarSign size={13} /> {(product.tempPrice * product.quantity)}
                                                 </span>
                                             </div>
                                         </div>
@@ -422,7 +422,7 @@ export function BuyDialog({ children }: { children: React.ReactNode }) {
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right text-lg">Total</Label>
                     <div className="flex items-center text-lg font-semibold">
-                        <IndianRupee size={17} /> {calculateTotal().toFixed(2)}
+                        <DollarSign size={17} /> {calculateTotal().toFixed(2)}
                     </div>
                 </div>
 
