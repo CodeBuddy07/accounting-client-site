@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Search, Inbox, ChevronRight, DollarSign } from "lucide-react";
+import { Search, Inbox, ChevronRight, DollarSign, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTransactions } from "@/hooks/useTransaction";
+import { useDeleteTransaction, useTransactions } from "@/hooks/useTransaction";
 import { useParams } from "react-router-dom";
 import { SmartPagination } from "@/components/ui/SmartPagination";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 
 const TransactionPage = () => {
@@ -32,6 +33,8 @@ const TransactionPage = () => {
         dateTo: dateRange?.to,
         type: type === "all" ? undefined : type,
     });
+
+    const { mutate: deleteTransaction } = useDeleteTransaction();
 
     const handleFromDateChange = (date: Date | undefined) => {
         if (!date) return;
@@ -69,6 +72,11 @@ const TransactionPage = () => {
 
     // Today's date normalized to the start of the day
     const today = normalizeStartOfDay(new Date());
+
+
+    const handleDeleteTransaction = (id: string) => {
+        deleteTransaction(id);
+    }
 
 
     return (
@@ -166,6 +174,8 @@ const TransactionPage = () => {
                                     <TableHead>Note</TableHead>
                                     <TableHead>Type</TableHead>
                                     <TableHead>Date</TableHead>
+                                    <TableHead>Actions</TableHead>
+
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -226,6 +236,42 @@ const TransactionPage = () => {
                                             <TableCell>
                                                 {txn.date ? format(new Date(txn.date), "MMM dd, yyyy") : "—"}
                                             </TableCell>
+                                            <TableCell className="flex gap-2 justify-end">
+
+ 
+
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                    >
+                                                        <Trash2 className="w-5 h-5 text-red-600" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure you want to delete this customer?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            This action is permanent and cannot be undone.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel >
+                                                            Cancel
+                                                        </AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={() => {
+                                                                 handleDeleteTransaction(txn._id!);
+                                                            }}
+                                                        >
+                                                            Yes, delete
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+
+                                        </TableCell>
                                         </TableRow>
                                     ))
                                 )}

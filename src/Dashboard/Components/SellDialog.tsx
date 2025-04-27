@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon, ChevronsUpDown, DollarSign, Trash2 } from "lucide-react";
+import { CalendarIcon, ChevronsUpDown, DollarSign, Trash2, PercentIcon } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -37,6 +37,8 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
     const [paymentType, setPaymentType] = useState<"cash" | "due">("cash");
     const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
     const [showProductDropdown, setShowProductDropdown] = useState(false);
+    const [discount, setDiscount] = useState(0);
+    const [discountType, setDiscountType] = useState<"percentage" | "fixed">("percentage");
 
     const customerDropdownRef = useRef<HTMLDivElement>(null);
     const productDropdownRef = useRef<HTMLDivElement>(null);
@@ -114,11 +116,49 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
         );
     };
 
-    const calculateTotal = () => {
+    const calculateSubtotal = () => {
         return selectedProducts.reduce(
             (total, product) => total + product.tempPrice * product.quantity,
             0
         );
+    };
+
+    const calculateDiscountAmount = () => {
+        const subtotal = calculateSubtotal();
+        if (discountType === "percentage") {
+            return (subtotal * discount) / 100;
+        } else {
+            return discount;
+        }
+    };
+
+    const generateFullNote = () => {
+        const subtotal = calculateSubtotal(); // assuming you already have this function
+        const discountAmount = discountType === "percentage" 
+          ? (subtotal * discount) / 100 
+          : discount;
+      
+        let discountText = "";
+      
+        if (discountType === "percentage") {
+          discountText = `Discount of ${discount}% (৳${discountAmount.toFixed(2)}) on total ৳${subtotal.toFixed(2)} applied.`;
+        } else {
+          discountText = `Discount of ৳${discountAmount.toFixed(2)} on total ৳${subtotal.toFixed(2)} applied.`;
+        }
+      
+        if (note.trim()) {
+          return `${note} | ${discountText}`;
+        } else {
+          return discountText;
+        }
+      };
+      
+      
+
+    const calculateTotal = () => {
+        const subtotal = calculateSubtotal();
+        const discountAmount = calculateDiscountAmount();
+        return subtotal - discountAmount;
     };
 
     const handleSubmit = () => {
@@ -132,8 +172,6 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
             return;
         }
 
-
-
         const saleData = {
             type: "sell",
             customerId: selectedCustomer._id,
@@ -145,8 +183,14 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
             })),
             date,
             paymentType,
-            note,
+            note: generateFullNote(),
             sms,
+            discount: {
+                type: discountType,
+                value: discount,
+                amount: calculateDiscountAmount(),
+            },
+            subtotal: calculateSubtotal(),
             total: calculateTotal(),
         };
 
@@ -157,11 +201,13 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
             {
                 onSuccess: () => {
                     setOpen(false);
-                    setNote(""); // Add this with your other state resets
+                    setNote("");
                     setSelectedCustomer(null);
                     setSelectedProducts([]);
                     setDate(new Date());
                     setPaymentType("cash");
+                    setDiscount(0);
+                    setDiscountType("percentage");
                 }
             }
         );  
@@ -280,7 +326,6 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                         {/* Selected Products List */}
                         {selectedProducts.length > 0 && (
                             <div className="space-y-2 mt-2">
-
                                 <div className=" space-y-2">
                                     {selectedProducts.map((product) => (
                                         <div
@@ -366,9 +411,50 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                             </div>
                         </div>
 
-                        {/* Note */}
-                        <div className="space-y-2">
-                            <Label htmlFor="note" className="text-right mt-2">
+                        {/* Discount Section */}
+                        <div className="space-y-2 mt-2">
+                            <Label htmlFor="discount" className="text-right">
+                                Discount
+                            </Label>
+                            <div className="flex gap-2 items-center">
+                                <Select
+                                    value={discountType}
+                                    onValueChange={(value: "percentage" | "fixed") => setDiscountType(value)}
+                                >
+                                    <SelectTrigger className="w-36">
+                                        <SelectValue placeholder="Discount type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="percentage">Percentage (%)</SelectItem>
+                                        <SelectItem value="fixed">Fixed Amount</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <div className="relative flex-1">
+                                    <Input
+                                        type="number"
+                                        value={discount}
+                                        onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                                        placeholder={discountType === "percentage" ? "Discount %" : "Discount amount"}
+                                        className="w-full"
+                                        min="0"
+                                    />
+                                    {discountType === "percentage" && (
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                            <PercentIcon className="h-4 w-4 opacity-50" />
+                                        </div>
+                                    )}
+                                    {discountType === "fixed" && (
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                            <DollarSign className="h-4 w-4 opacity-50" />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Note - Updated with discount hint */}
+                        <div className="space-y-2 mt-2">
+                            <Label htmlFor="note" className="text-right">
                                 Note
                             </Label>
                             <div className="col-span-3">
@@ -376,7 +462,10 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                     id="note"
                                     value={note}
                                     onChange={(e) => setNote(e.target.value)}
-                                    placeholder="Additional notes about this sell..."
+                                    placeholder={discount > 0 ? 
+                                        `Additional notes about this sell (e.g., reason for ${discountType === "percentage" ? `${discount}% discount` : `$${discount} discount`})...` : 
+                                        "Additional notes about this sell..."
+                                    }
                                     className="min-h-[100px] w-full"
                                 />
                             </div>
@@ -413,19 +502,33 @@ export function SellDialog({ children }: { children: React.ReactNode }) {
                                Send Automate Message.
                             </label>
                         </div>
-
-
                     </div>
                 </div>
 
-                {/* Total */}
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right text-lg">Total : </Label>
+                {/* Price Breakdown */}
+                <div className="grid grid-cols-4 items-center gap-4 mt-2">
+                    <Label className="text-right">Subtotal : </Label>
+                    <div className="col-span-3 font-medium flex items-center gap-1">
+                        <DollarSign size={15} />{calculateSubtotal().toFixed(2)}
+                    </div>
+
+                    {discount > 0 && (
+                        <>
+                            <Label className="text-right">Discount : </Label>
+                            <div className="col-span-3 text-red-500 font-medium flex items-center gap-1">
+                                - <DollarSign size={15} />{calculateDiscountAmount().toFixed(2)}
+                                {discountType === "percentage" && (
+                                    <span className="ml-1 text-gray-500">({discount}%)</span>
+                                )}
+                            </div>
+                        </>
+                    )}
+
+                    <Label className="text-right text-lg font-bold">Total : </Label>
                     <div className="col-span-3 text-lg font-semibold flex items-center gap-1">
                         <DollarSign size={17} />{calculateTotal().toFixed(2)}
                     </div>
                 </div>
-
 
                 <div className="flex justify-end gap-2">
                     <Button disabled={transactionPending} variant="outline" onClick={() => setOpen(false)}>

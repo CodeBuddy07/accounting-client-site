@@ -19,7 +19,6 @@ const MainLayout = () => {
                     <div className="flex justify-between items-center gap-2 px-5 w-full">
                         <div className="flex justify-center items-center gap-5">
                             <SidebarTrigger className="-ml-1" />
-                            <span className="font-semibold">Ruhul Amin</span>
                         </div>
                         <ModeToggle />
                     </div>

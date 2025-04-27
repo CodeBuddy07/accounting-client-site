@@ -73,5 +73,21 @@ export const useTransactions = ({
     });
 };
 
-
+// Delete transaction
+export const useDeleteTransaction = () => {
+    const queryClient = useQueryClient();
+  
+    return useMutation({
+      mutationFn: async (id: string) => {
+        await axiosSecure.delete(`/api/transactions/${id}`);
+      },
+      onSuccess: () => {
+        toast.success("Transaction deleted successfully!");
+        queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      },
+      onError: () => {
+        toast.error("Failed to delete Transaction.");
+      },
+    });
+  };
 
